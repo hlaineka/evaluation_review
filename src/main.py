@@ -1,8 +1,11 @@
 from intra import IntraAPIClient
 import json
 import sqlite3
+import bottle
 from bottle import route, run, template
 import re
+
+app = bottle.app()
 
 ic = IntraAPIClient()
 
@@ -10,6 +13,11 @@ payload = {
    "filter[primary_campus]":13
 }
 
+def make_student_database():
+	return True
+
+
+# gets all the students at Hive Helsinki
 def get_students_by_campus():
 	ret_str = ''
 	i_str = ''
@@ -24,19 +32,20 @@ def get_students_by_campus():
 		ret_str += i_str
 	return ret_str
 
-def print_html():
-	header_file = open('html_sources/header.txt')
+# returns the html required by bottle to create the main page
+def get_html():
+	header_file = open('src/html_sources/header.txt')
 	str1 = header_file.read()
 	str2 = '<body>\n<div class="header">\n\t<h1>Evaluation reviewer</h1>\n</div>\n<div class="topnav">\n\t<a href="#">Link</a>\n\t<a href="#">Link</a>\n\t<a href="#">Link</a>\n\t<a href="#" style="float:right">Link</a>\n</div>\n<div class="row">\n\t<div class="leftcolumn">\n\t\t<div class="card">\n\t\t\t<h2>STUDENTS</h2>\n\t\t\t\t<h5>Hive Helsinki</h5>'
 	str3 = get_students_by_campus()
-	footer_file = open('html_sources/footer.txt')
+	footer_file = open('src/html_sources/footer.txt')
 	str4 = footer_file.read()
 	return (str1 + str2 + str3 + str4)
 
-html_str = print_html()
+html_str = get_html()
 
 @route('/evals')
 def evals():
 	return html_str
 
-run(host='localhost', port=8080, debug=True)
+run(host='0.0.0.0', port=8080, debug=True)
