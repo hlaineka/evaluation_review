@@ -1,34 +1,47 @@
 from intra import IntraAPIClient
 import json
-import sqlite3
 import bottle
 from bottle import route, run, template
 import re
+from database import StudentDatabase
 
 app = bottle.app()
 
 ic = IntraAPIClient()
 
+student_database = StudentDatabase('students.db')
+
 payload = {
    "filter[primary_campus]":13
 }
 
-def make_student_database():
-	return True
-
+def save_students():
+	pattern = re.compile('3b3')
+	file = open('data.json')
+	json_dump = file.read()
+	response_list = json.loads(json_dump)
+	for i in response_list:
+		for w in i:
+			try:
+				if (pattern.search(w['login'])):
+					continue
+				else:
+					student_database.save_student(w)
+			except TypeError:
+				break
 
 # gets all the students at Hive Helsinki
 def get_students_by_campus():
 	ret_str = ''
 	i_str = ''
-	pattern = re.compile('3b3')
-	response_list = ic.pages("campus/13/users")
-	for i in response_list:
-		i_str = (i['login'])
-		if (pattern.search(i_str)):
-			continue
-		else:
-			i_str += '<br>'
+	students = student_database.get_students()
+	for i in students:
+		i_str = str(i[0])
+		i_str += ", "
+		i_str += i[1]
+		i_str += ", "
+		i_str += i[2]
+		i_str += "<br>\n"
 		ret_str += i_str
 	return ret_str
 
@@ -41,6 +54,9 @@ def get_html():
 	footer_file = open('src/html_sources/footer.txt')
 	str4 = footer_file.read()
 	return (str1 + str2 + str3 + str4)
+
+if not (student_database.students_added()):
+	save_students()
 
 html_str = get_html()
 

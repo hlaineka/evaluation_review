@@ -112,7 +112,8 @@ class IntraAPIClient(object):
 		kwargs['params']['page'] = int(kwargs['params'].get('page', 1)) 
 		kwargs['params']['per_page'] = kwargs['params'].get('per_page', 100) 
 		data = self.get(url=url, headers=headers, **kwargs) 
-		total = data.json() 
+		total = []
+		total.append(data.json())
 		if 'X-Total' not in data.headers: 
 			return total 
 		last_page = math.ceil(int(data.headers['X-Total']) / 
@@ -121,7 +122,7 @@ class IntraAPIClient(object):
 			initial=1, total=last_page - kwargs['params']['page'] + 1, 
 			desc=url, unit='p', disable=not self.progress_bar): 	
 			kwargs['params']['page'] = page + 1
-			total += self.get(url=url, headers=headers, **kwargs).json() 
+			total.append(self.get(url=url, headers=headers, **kwargs).json())
 		return total 
 
 

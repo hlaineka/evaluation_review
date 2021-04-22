@@ -1,1 +1,4 @@
 src/config.yml
+data.json
+students.db
+src/__pycache__
