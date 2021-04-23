@@ -1,4 +1,5 @@
 src/config.yml
 data.json
-students.db
+student.db
 src/__pycache__
+documentation_notes.txt

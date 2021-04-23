@@ -119,7 +119,8 @@ body {
 <div class="row">
 	<div class="leftcolumn">
 	<div class="card">
-		%<h2>{{student[1]}}</h2>
+		%
+		<h2>{{student[1]}}</h2>
 		%end
     </div>
     <div class="card">
