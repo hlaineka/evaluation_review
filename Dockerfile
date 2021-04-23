@@ -9,7 +9,7 @@ RUN adduser user sudo
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 6660
 
 ADD . /app
 WORKDIR /app
