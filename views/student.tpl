@@ -119,11 +119,8 @@ body {
 <div class="row">
 	<div class="leftcolumn">
 	<div class="card">
-		<h2>STUDENTS</h2>
-			<h5>Hive Helsinki</h5>
-			% for student in students:
-			<a href="student/{{student[1]}}">{{student[1]}}</a>, <a href="{{student[2]}}">intra</a><br>
-			%end
+		%<h2>{{student[1]}}</h2>
+		%end
     </div>
     <div class="card">
       <h2>TITLE HEADING</h2>
