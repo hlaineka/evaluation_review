@@ -13,6 +13,7 @@ class StudentDatabase:
 		cursor = self.database.cursor()
 		student_ready = cursor.execute("SELECT status FROM tables WHERE name = \"students\"").fetchone()
 		if not (student_ready[0]):
+			self.database.execute("drop table if exists students")
 			self.database.execute("CREATE TABLE students(id INTEGER, login TEXT, url TEXT)")
 			self.save_students()
 		projects_ready = cursor.execute("SELECT status FROM tables WHERE name = \"projects\"").fetchone()
@@ -23,7 +24,7 @@ class StudentDatabase:
 		scales_ready = cursor.execute("SELECT status FROM tables WHERE name = \"scales\"").fetchone()
 		if not (scales_ready[0]):
 			self.database.execute("drop table if exists scales")
-			self.database.execute("CREATE TABLE scales(corrector TEXT, id INT, scale_id INT, project_id INT, comment TEXT, final_mark INT, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, filled_at DATETIME, duration INT, true_flags INT, feedback_comment TEXT, feedback_rating INT, feedback_id INT)")
+			self.database.execute("CREATE TABLE scales(corrector TEXT, id INT, scale_id INT, project_id INT, comment TEXT, final_mark INT, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, filled_at DATETIME, duration INT, true_flags INT, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT)")
 			self.save_scale_teams()
 		self.database.commit()
 
@@ -48,7 +49,7 @@ class StudentDatabase:
 
 	def get_student(self, login):
 		cursor = self.database.cursor()
-		student = cursor.execute("SELECT id, login, url FROM student WHERE login = ?", (login, )).fetchone()
+		student = cursor.execute("SELECT id, login, url FROM students WHERE login = ?", (login, )).fetchone()
 		return (student)
 
 	def save_student(self, student):
@@ -79,9 +80,20 @@ class StudentDatabase:
 		if not team['filled_at']:
 			return
 		scale_id = team['id']
+		feedback_id = team['feedbacks'][0]['id']
 		cursor = self.database.cursor()
 		cursor.execute("INSERT INTO scales (corrector, id, scale_id, project_id, comment, final_mark, begin_at, filled_at, duration, feedback_comment, feedback_rating, feedback_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ('hlaineka', team['id'], team['scale_id'], team['team']['project_id'], team['comment'], team['final_mark'], team['begin_at'], team['filled_at'], team['scale']['duration'], team['feedbacks'][0]['comment'], team['feedbacks'][0]['rating'], team['feedbacks'][0]['id'] ))
+		# detailed info on the feedback rating points
+		url = "feedbacks/"+str(feedback_id)
+		response = ic.get(url)
+		data = response.json()
+		feedback_points = 0
+		for i in (data['feedback_details']):
+			feedback_points += i['rate']
+		executable = "UPDATE scales SET feedback_points = "+str(feedback_points)+" WHERE id = "+str(scale_id)
+		cursor.execute(executable)
 		i = 0
+		# adding the correcteds
 		for person in team['correcteds']:
 			if (i < 3):
 				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
@@ -114,6 +126,8 @@ class StudentDatabase:
 		response_list = ic.pages("cursus/1/projects")
 		for i in response_list:
 			self.save_project(i)
+		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
+		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time, ))
 
 
 	
