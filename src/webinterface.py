@@ -7,7 +7,7 @@ class WebInterface:
 		self.student_database = studentdb
 
 	# gets all the students at Hive Helsinki
-	def get_index(self):
+	def get_students(self):
 		data = self.student_database.get_students()
 		if data:
 			return template('index', students=data)
@@ -20,3 +20,6 @@ class WebInterface:
 			return template('student', student=data)
 		else:
 			return HTTPResponse(status=204)
+
+	def get_start(self):
+		return template('start')

@@ -10,11 +10,19 @@ ic = IntraAPIClient()
 class StudentDatabase:
 	#Function used to initialize the database. The creation takes time!
 	def init_database(self):
+		if not (path.exists('./student.db')):
+			self.database = sqlite3.connect('./student.db')
+			self.database.execute("CREATE TABLE tables (name TEXT, status INT, created DATETIME, updated DATETIME)")
+			self.database.execute("INSERT INTO tables (name, status) VALUES (\"students\", 0), (\"scales\", 0), (\"projects\", 0), (\"student_points\", 0), (\"eval_points\", 0)")
+			self.database.commit()
+		else:
+			self.database = sqlite3.connect('./student.db')
+			self.database.commit()
 		cursor = self.database.cursor()
 		student_ready = cursor.execute("SELECT status FROM tables WHERE name = \"students\"").fetchone()
 		if not (student_ready[0]):
 			self.database.execute("drop table if exists students")
-			self.database.execute("CREATE TABLE students(id INTEGER, login TEXT, url TEXT)")
+			self.database.execute("CREATE TABLE students(id INTEGER, login TEXT, url TEXT, total_points INT, evals INT, avarage_points INT)")
 			self.save_students()
 		projects_ready = cursor.execute("SELECT status FROM tables WHERE name = \"projects\"").fetchone()
 		if not (projects_ready[0]):
@@ -24,20 +32,12 @@ class StudentDatabase:
 		scales_ready = cursor.execute("SELECT status FROM tables WHERE name = \"scales\"").fetchone()
 		if not (scales_ready[0]):
 			self.database.execute("drop table if exists scales")
-			self.database.execute("CREATE TABLE scales(corrector TEXT, id INT, scale_id INT, project_id INT, comment TEXT, final_mark INT, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, filled_at DATETIME, duration INT, true_flags INT, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT)")
+			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, too_firendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_total_points INT DEFAULT 0)")
 			self.save_scale_teams()
 		self.database.commit()
 
 	def __init__(self):
-		if not (path.exists('./student.db')):
-			self.database = sqlite3.connect('./student.db')
-			self.database.execute("CREATE TABLE tables (name TEXT, status INT, created DATETIME, updated DATETIME)")
-			self.database.execute("INSERT INTO tables (name, status) VALUES (\"students\", 0), (\"scales\", 0), (\"projects\", 0)")
-			self.database.commit()
-		else:
-			self.database = sqlite3.connect('./student.db')
-			self.database.commit()
-		self.init_database()
+		pass
 
 	def get_database(self):
 		return self.database
@@ -73,7 +73,49 @@ class StudentDatabase:
 		cursor = self.database.cursor()
 		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
 		cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"students\"", (time, ))
+		self.database.commit()
 		return
+
+	def	get_comment_points(self, team):
+		comment_len = len(team['comment'])
+		if (comment_len > 180):
+			comment_points = 1
+
+	def	get_final_mark_points(self):
+		return 0
+
+	def get_too_friendly_points(self):
+		return 0
+
+	def get_duration_points(self, team, final_mark_points):
+		start_time = datetime.strptime(team['begin_at'], timeformat)
+		end_time = datetime.strptime(team['filled_at'], timeformat)
+		target_time = team['scale']['duration']
+		minimum_time = target_time * 0.66
+		duration = (end_time - start_time).total_seconds()
+		duration_points = 0
+		if (duration < minimum_time and final_mark_points > 0):
+			duration_points = -42
+		elif duration < target_time:
+			duration_points = -10
+		elif duration > target_time * 1.5:
+			duration_points = 20
+		else:
+			duration_points = 10
+		return duration_points
+
+	def calculate_eval_points(self, scale_id, team):
+		final_mark_points = self.get_final_mark_points()
+		self.database.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE scale_id = (?)", (scale_id, ))
+		comment_points = self.get_comment_points(team)
+		self.database.execute("UPDATE scales SET comment_points = 1 WHERE scale_id = (?)", (scale_id, ))
+		too_firendly_points = self.get_too_friendly_points()
+		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
+		duration_points = self.get_duration_points()
+		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
+		total_points = comment_points + final_mark_points + too_firendly_points + duration_points + flags_points + feedback_total_points
+		self.database.execute("UPDATE scales SET too_friendly_points ="+str(total_points)+" WHERE scale_id = (?)", (scale_id, ))
+		self.database.commit()
 
 	def	save_scale_team(self, team):
 		# checking that the evaluation did actually happen
@@ -99,6 +141,7 @@ class StudentDatabase:
 				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
 				cursor.execute(executable)
 			i += 1
+		self.calculate_eval_points(scale_id, team)
 		self.database.commit()
 		return
 	
@@ -114,6 +157,7 @@ class StudentDatabase:
 		self.save_student_teams()
 		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time, ))
+		self.database.commit()
 
 	def	save_project(self, project):
 		for i in project:
@@ -128,6 +172,7 @@ class StudentDatabase:
 			self.save_project(i)
 		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time, ))
+		self.database.commit()
 
 
 	
