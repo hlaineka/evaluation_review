@@ -68,6 +68,9 @@ class StudentDatabase:
 			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "+start_date+" AND "+end_date+" ORDER BY "+order+" OFFSET "+str(start)+" ROWS FETCH NEXT "+str(amount)+"ROWS ONLY")
 		return evals
 
+	def get_project_name(id):
+		
+
 
 	#student database creation
 	def save_student(self, student):
@@ -129,18 +132,20 @@ class StudentDatabase:
 		return (feedback_points * 2)
 
 	def calculate_eval_points(self, scale_id, team, feedback_points):
+		cursor = self.database.cursor()
 		final_mark_points = self.get_final_mark_points()
-		self.database.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE scale_id = (?)", (scale_id, ))
+		cursor.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE id = (?)", (scale_id, ))
 		comment_points = self.get_comment_points(team)
-		self.database.execute("UPDATE scales SET comment_points = 1 WHERE scale_id = (?)", (scale_id, ))
+		cursor.execute("UPDATE scales SET comment_points = 1 WHERE id = (?)", (scale_id, ))
 		too_friendly_points = self.get_too_friendly_points()
-		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
+		cursor.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE id = (?)", (scale_id, ))
 		duration_points = self.get_duration_points(team, final_mark_points)
-		self.database.execute("UPDATE scales SET duration_points ="+str(duration_points)+" WHERE scale_id = (?)", (scale_id, ))
+		cursor.execute("UPDATE scales SET duration_points ="+str(duration_points)+" WHERE id = (?)", (scale_id, ))
 		flags_points = 0
 		feedback_total_points = self.get_feedback_total_points(feedback_points)
+		cursor.execute("UPDATE scales SET feedback_total_points ="+str(feedback_total_points)+" WHERE id = (?)", (scale_id, ))
 		total_points = comment_points + final_mark_points + too_friendly_points + duration_points + flags_points + feedback_total_points
-		self.database.execute("UPDATE scales SET total_points ="+str(total_points)+" WHERE scale_id = (?)", (scale_id, ))
+		cursor.execute("UPDATE scales SET total_points ="+str(total_points)+" WHERE id = (?)", (scale_id, ))
 		self.database.commit()
 
 	#scale teams database creations

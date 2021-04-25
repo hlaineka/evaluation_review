@@ -51,11 +51,5 @@ class WebInterface:
 
 	def get_eval(scale_id):
 		one_eval = self.student_database.get_eval()
-		html_insert += '<a href="/eval/'+str(data[1])+'">'+str(data[1])+'</a><br>total_points: '+str(data[0])+'<br>time: '+data[3]+'<br>corrector: '+data[4]+'<br>correcteds: '+data[5]
-		if data[6]:
-			html_insert += ' '+data[6]
-		if data[7]:
-			html_insert += ' '+data[7]
-		if data[8]:
-			html_insert += ' '+data[8]
-		html_insert += '<br><br>\n'
+		project_name = 
+		return template('eval', one_eval=one_eval)
