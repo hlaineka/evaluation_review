@@ -7,6 +7,7 @@ from datetime import datetime
 
 ic = IntraAPIClient()
 timeformat = '%Y-%m-%dT%H:%M:%S.%fZ'
+timeformat_sql = '%Y-%m-%d %H:%M:%S'
 
 class StudentDatabase:
 	#Function used to initialize the database. The creation takes time!
@@ -33,25 +34,35 @@ class StudentDatabase:
 		scales_ready = cursor.execute("SELECT status FROM tables WHERE name = \"scales\"").fetchone()
 		if not (scales_ready[0]):
 			self.database.execute("drop table if exists scales")
-			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_total_points INT DEFAULT 0)")
+			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 TEXT, corrected2 TEXT, corrected3 TEXT, corrected4 INT, too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_interested INT, feedback_nice INT, feedback_punctuality INT, feedback_rigorous INT, feedback_total_points INT DEFAULT 0)")
 			self.save_scale_teams()
 		self.database.commit()
 
 	def __init__(self):
-		pass
+		self.database = None
 
 	def get_database(self):
 		return self.database
 
 	def get_students(self):
 		cursor = self.database.cursor()
-		rows = cursor.execute("SELECT id, login, url FROM student")
+		rows = cursor.execute("SELECT id, login, url FROM students")
 		return (rows)
 
 	def get_student(self, login):
 		cursor = self.database.cursor()
 		student = cursor.execute("SELECT id, login, url FROM students WHERE login = ?", (login, )).fetchone()
 		return (student)
+
+	def get_eval(self, id):
+		cursor = self.database.cursor()
+		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_rating, feedback_total_points FROM scales WHERE scale_id ="+str(id))
+		return one_eval
+
+	def get_evals(self):
+		cursor = self.database.cursor()
+		evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales ORDER BY total_points")
+		return evals
 
 	def save_student(self, student):
 		cursor = self.database.cursor()
@@ -72,7 +83,7 @@ class StudentDatabase:
 				except TypeError:
 					break
 		cursor = self.database.cursor()
-		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
+		time = datetime.now().strftime(timeformat_sql)
 		cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"students\"", (time, ))
 		self.database.commit()
 		return
@@ -128,8 +139,12 @@ class StudentDatabase:
 			return
 		scale_id = team['id']
 		feedback_id = team['feedbacks'][0]['id']
+		start_time = datetime.strptime(team['begin_at'], timeformat)
+		end_time = datetime.strptime(team['filled_at'], timeformat)
+		begin_str = start_time.strftime(timeformat_sql)
+		filled_str = end_time.strftime(timeformat_sql)
 		cursor = self.database.cursor()
-		cursor.execute("INSERT INTO scales (corrector, id, scale_id, project_id, comment, final_mark, begin_at, filled_at, duration, feedback_comment, feedback_rating, feedback_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ('hlaineka', team['id'], team['scale_id'], team['team']['project_id'], team['comment'], team['final_mark'], team['begin_at'], team['filled_at'], team['scale']['duration'], team['feedbacks'][0]['comment'], team['feedbacks'][0]['rating'], team['feedbacks'][0]['id'] ))
+		cursor.execute("INSERT INTO scales (corrector, id, scale_id, project_id, comment, final_mark, begin_at, filled_at, duration, feedback_comment, feedback_rating, feedback_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ('hlaineka', team['id'], team['scale_id'], team['team']['project_id'], team['comment'], team['final_mark'], begin_str, filled_str, team['scale']['duration'], team['feedbacks'][0]['comment'], team['feedbacks'][0]['rating'], team['feedbacks'][0]['id'] ))
 		# detailed info on the feedback rating points
 		url = "feedbacks/"+str(feedback_id)
 		response = ic.get(url)
@@ -160,7 +175,7 @@ class StudentDatabase:
 
 	def	save_scale_teams(self):
 		self.save_student_teams()
-		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
+		time = datetime.now().strftime(timeformat_sql)
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time, ))
 		self.database.commit()
 
@@ -175,7 +190,7 @@ class StudentDatabase:
 		response_list = ic.pages("cursus/1/projects")
 		for i in response_list:
 			self.save_project(i)
-		time = datetime.now().strftime("%B %d, %Y %I:%M%p")
+		time = datetime.now().strftime(timeformat_sql)
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time, ))
 		self.database.commit()
 

@@ -37,6 +37,11 @@ def students():
 	html_str = web.get_students()
 	return html_str
 
+@route('/evals')
+def evals():
+	html_str = web.get_evals()
+	return html_str
+
 @route('/student/<login>')
 def student(login):
 	html_str = web.get_studentpage(login)

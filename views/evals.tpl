@@ -15,9 +15,8 @@
 <div class="row">
 	<div class="leftcolumn">
 	<div class="card">
-		<h2>STUDENTS</h2>
-			<h5>Hive Helsinki</h5>
-      {{!students}}
+		<h2>EVALUATIONS</h2>
+		{{!evals}}
     </div>
   </div>
   <div class="rightcolumn">

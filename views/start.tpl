@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-%
 <link rel="stylesheet" href="static/{{style}}">
-%end
 </head>
 <body>
 <div class="header">
@@ -20,11 +18,11 @@
 			  <form action="http://localhost:6660" method="post" id="button" class="submit_form">
         <input class="submit" type="submit" name="start" value="Create Database" />
         </form>
-    </div>
+     </div>
     <div id="loading">
     %
-     <img src="images/{{picture}}">
-     %end
+    <img src="images/{{picture}}">
+    %end
     </div>
   </div>
   </div>
@@ -49,6 +47,8 @@
       document.getElementById("content").style.display = "none";
    }
    function init(){
+     document.getElementById("loading").style.display = "none";
+      document.getElementById("content").style.display = "block";
       document.getElementById("button").onsubmit = unicorns;
    }
    window.onload = init;
