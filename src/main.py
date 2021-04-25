@@ -16,19 +16,16 @@ def start():
 	html_str = web.get_start()
 	return html_str
 
-@route('/wait.html')
-def wait():
-	unicorns = 'burpuni.gif'
-	return template('wait', picture=unicorns)
+@post('/')
+def redirect_to_wait():
+	button = request.forms.get('start')
+	if button:
+		redirect('/wait')
 
-@post('/wait.html')
-def start_database():
-	start = request.POST.get('start')
-	print (start)
-	if start:
-		print("start is not None")
-		studentdb.init_database()
-		redirect('/index')
+@route('/wait')
+def wait():
+	studentdb.init_database()
+	redirect("/index")
 
 @route('/index')
 def index():
@@ -48,5 +45,9 @@ def student(login):
 @route('/images/<picture>')
 def serve_pictures(picture):
 	return static_file(picture, root='images')
+
+@route('/static/<filename>')
+def send_static(filename):
+	return static_file(filename, root='./static/')
 
 run(host='0.0.0.0', port=6660, debug=True)

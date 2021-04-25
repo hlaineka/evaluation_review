@@ -6,6 +6,7 @@ from intra import IntraAPIClient
 from datetime import datetime
 
 ic = IntraAPIClient()
+timeformat = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 class StudentDatabase:
 	#Function used to initialize the database. The creation takes time!
@@ -32,7 +33,7 @@ class StudentDatabase:
 		scales_ready = cursor.execute("SELECT status FROM tables WHERE name = \"scales\"").fetchone()
 		if not (scales_ready[0]):
 			self.database.execute("drop table if exists scales")
-			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, too_firendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_total_points INT DEFAULT 0)")
+			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 INT, corrected2 INT, corrected3 INT, corrected4 INT, too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_total_points INT DEFAULT 0)")
 			self.save_scale_teams()
 		self.database.commit()
 
@@ -78,8 +79,10 @@ class StudentDatabase:
 
 	def	get_comment_points(self, team):
 		comment_len = len(team['comment'])
+		comment_points = 0
 		if (comment_len > 180):
 			comment_points = 1
+		return comment_points
 
 	def	get_final_mark_points(self):
 		return 0
@@ -109,11 +112,13 @@ class StudentDatabase:
 		self.database.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE scale_id = (?)", (scale_id, ))
 		comment_points = self.get_comment_points(team)
 		self.database.execute("UPDATE scales SET comment_points = 1 WHERE scale_id = (?)", (scale_id, ))
-		too_firendly_points = self.get_too_friendly_points()
+		too_friendly_points = self.get_too_friendly_points()
 		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
-		duration_points = self.get_duration_points()
+		duration_points = self.get_duration_points(team, final_mark_points)
 		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
-		total_points = comment_points + final_mark_points + too_firendly_points + duration_points + flags_points + feedback_total_points
+		flags_points = 0
+		feedback_total_points = 0
+		total_points = comment_points + final_mark_points + too_friendly_points + duration_points + flags_points + feedback_total_points
 		self.database.execute("UPDATE scales SET too_friendly_points ="+str(total_points)+" WHERE scale_id = (?)", (scale_id, ))
 		self.database.commit()
 

@@ -10,16 +10,20 @@ class WebInterface:
 	def get_students(self):
 		data = self.student_database.get_students()
 		if data:
-			return template('index', students=data)
+			return template('index', students=data, style="styles.css")
 		else:
 			return HTTPResponse(status=204)
 
 	def get_studentpage(self, login):
 		data = self.student_database.get_student(login)
 		if data:
-			return template('student', student=data)
+			return template('student', student=data, style="styles.css")
 		else:
 			return HTTPResponse(status=204)
 
 	def get_start(self):
-		return template('start')
+		unicorns = 'burpuni.gif'
+		return template('start', picture=unicorns, style='styles.css')
+	
+	def get_index(self):
+		return template('index', style="styles.css")
