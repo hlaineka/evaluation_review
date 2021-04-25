@@ -6,20 +6,20 @@
 %end
 </head>
 <body>
-<div class="header">
-	<h1>Evaluation reviewer</h1>
-</div>
 <div class="topnav">
-	<a href="/evals">Evaluations</a>
-	<a href="/students">Students</a>
-	<a href="/search" style="float:right">Search</a>
+  <div class="topnav_leftcolumn">
+	<a href="/evals" style="float:right">Evaluations</a>
+	<a href="/students" style="float:right">Students</a>
+  </div>
+  <div class="topnav_rightcolumn">
+  <a href="/search" style="float:left">Search</a>
+  </div>
 </div>
 <div class="row">
 	<div class="leftcolumn">
-	<div class="card">
-		<h2>WELCOME</h2>
-			
-    </div>
+	<div class="card2">
+		<h1>EVALUATION REVIEWER</h1>
+	</div>
     <div class="card">
       <h2>TITLE HEADING</h2>
       <h5>Title description, Sep 2, 2017</h5>
@@ -29,11 +29,11 @@
     </div>
   </div>
   <div class="rightcolumn">
-    <div class="card">
+    <div class="card3">
       <h2>About Me</h2>
       <p>This project was created by hlaineka</p>
     </div>
-    <div class="card">
+    <div class="card4">
       <h3>Follow Me</h3>
       <p>Some text..</p>
     </div>
@@ -41,7 +41,12 @@
 </div>
 
 <div class="footer">
-  <h2>Footer</h2>
+  <div class="footer_leftcolumn">
+  <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
+  </div>
+  <div class="footer_rightcolumn">
+  <p style="float:left">@hlaineka</p>
+  </div>
 </div>
 
 </body>

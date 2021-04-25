@@ -3,18 +3,13 @@
 <head>
 <style>
 div#content {
-    display: block;
+
     }
 
 div#loading {
-    top: 200 px;
-    margin: auto;
-    position: absolute;
-    z-index: 1000;
-    width: 160px;
-    height: 24px;
     cursor: wait;
-    display: none
+	margin-left: auto;
+    margin-right: auto
     }
 
 * {
@@ -24,40 +19,58 @@ div#loading {
 body {
   font-family: Arial;
   padding: 10px;
-  background: #f1f1f1;
+  background: white;
 }
 
 /* Header/Blog Title */
 .header {
   padding: 30px;
   text-align: center;
-  background: white;
+  background: #ee7801;
 }
 
 .header h1 {
   font-size: 50px;
+  text-align: center;
 }
 
 /* Style the top navigation bar */
 .topnav {
   overflow: hidden;
-  background-color: #333;
+  background-color: #ee7801;
+}
+
+.topnav_leftcolumn {   
+	float: left;
+	width: 75%;
+  }
+  
+  /* Right column */
+.topnav_rightcolumn {
+	float: left;
+	width: 25%;
+	background-color: #ffdd03;
+	padding-left: 20px;
+  }
+
+.topnav_right {
+	float: right;
 }
 
 /* Style the topnav links */
 .topnav a {
   float: left;
   display: block;
-  color: #f2f2f2;
+  color: black;
   text-align: center;
-  padding: 14px 16px;
+  padding: 16px 18px;
   text-decoration: none;
 }
 
 /* Change color on hover */
 .topnav a:hover {
-  background-color: #ddd;
-  color: black;
+  background-color: black;
+  color: white;
 }
 
 /* Create two unequal columns that floats next to each other */
@@ -71,7 +84,7 @@ body {
 .rightcolumn {
   float: left;
   width: 25%;
-  background-color: #f1f1f1;
+  background-color: white;
   padding-left: 20px;
 }
 
@@ -87,7 +100,36 @@ body {
   background-color: white;
   padding: 20px;
   margin-top: 20px;
+  margin-left: 15%;
+  margin-right: 15%;
 }
+
+.card2 {
+	background-color: white;
+	padding: 20px;
+	margin-top: 50px;
+	margin-left: 25%;
+	margin-right: 25%;
+	text-align: center;
+  }
+
+  .card3 {
+	background-color: #a1d4e0;
+	padding: 20px;
+	margin-top: 50px;
+	margin-left: 10%;
+	margin-right: 10%;
+	text-align: center;
+  }
+
+  .card4 {
+	background-color: #f5c5c3;
+	padding: 20px;
+	margin-top: 50px;
+	margin-left: 10%;
+	margin-right: 10%;
+	text-align: center;
+  }
 
 /* Clear floats after the columns */
 .row:after {
@@ -98,11 +140,22 @@ body {
 
 /* Footer */
 .footer {
-  padding: 20px;
-  text-align: center;
-  background: #ddd;
-  margin-top: 20px;
+	overflow: hidden;
 }
+
+.footer_leftcolumn {   
+	float: left;
+	background-color: #ee7801;
+	width: 75%;
+  }
+  
+  /* Right column */
+.footer_rightcolumn {
+	float: left;
+	width: 25%;
+	background-color: #ffdd03;
+	padding-left: 20px;
+  }
 
 /* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 800px) {
@@ -122,26 +175,30 @@ body {
 </style>
 </head>
 <body>
-<div class="header">
-	<h1>Evaluation reviewer</h1>
-</div>
 <div class="topnav">
-	<a href="/evals">Evaluations</a>
-	<a href="/students">Students</a>
-	<a href="/search" style="float:right">Search</a>
+  <div class="topnav_leftcolumn">
+	<a href="/evals" style="float:right">Evaluations</a>
+	<a href="/students" style="float:right">Students</a>
+  </div>
+  <div class="topnav_rightcolumn">
+  <a href="/search" style="float:left">Search</a>
+  </div>
 </div>
 <div class="row">
 	<div class="leftcolumn">
-	<div class="card">
-		<h2>{{student[1]}}</h2>
+	<div class="card2">
+		<h1>{{student[1]}}</h1>
+	</div>
+    <div class="card">
+      <p>Info about the student</p>
     </div>
   </div>
   <div class="rightcolumn">
-    <div class="card">
+    <div class="card3">
       <h2>About Me</h2>
       <p>This project was created by hlaineka</p>
     </div>
-    <div class="card">
+    <div class="card4">
       <h3>Follow Me</h3>
       <p>Some text..</p>
     </div>
@@ -149,7 +206,12 @@ body {
 </div>
 
 <div class="footer">
-  <h2>Footer</h2>
+  <div class="footer_leftcolumn">
+  <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
+  </div>
+  <div class="footer_rightcolumn">
+  <p style="float:left">@hlaineka</p>
+  </div>
 </div>
 
 </body>

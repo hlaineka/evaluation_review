@@ -41,6 +41,7 @@ class StudentDatabase:
 	def __init__(self):
 		self.database = None
 
+	#getter for others to use
 	def get_database(self):
 		return self.database
 
@@ -59,11 +60,16 @@ class StudentDatabase:
 		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_rating, feedback_total_points FROM scales WHERE scale_id ="+str(id))
 		return one_eval
 
-	def get_evals(self):
+	def get_evals(self, start = 0, amount = 20, order = 'total_points', start_date = None, end_date = None):
 		cursor = self.database.cursor()
-		evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales ORDER BY total_points")
+		if (end_date is None and start_date is None):
+			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales ORDER BY "+order+" LIMIT "+str(amount)+" OFFSET "+str(start))
+		else:
+			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "+start_date+" AND "+end_date+" ORDER BY "+order+" OFFSET "+str(start)+" ROWS FETCH NEXT "+str(amount)+"ROWS ONLY")
 		return evals
 
+
+	#student database creation
 	def save_student(self, student):
 		cursor = self.database.cursor()
 		cursor.execute("INSERT INTO students (id, login, url) VALUES (?, ?, ?)", (student['id'], student['login'], student['url']))
@@ -88,6 +94,7 @@ class StudentDatabase:
 		self.database.commit()
 		return
 
+	#point calculation for evals
 	def	get_comment_points(self, team):
 		comment_len = len(team['comment'])
 		comment_points = 0
@@ -118,7 +125,10 @@ class StudentDatabase:
 			duration_points = 10
 		return duration_points
 
-	def calculate_eval_points(self, scale_id, team):
+	def get_feedback_total_points(self, feedback_points):
+		return (feedback_points * 2)
+
+	def calculate_eval_points(self, scale_id, team, feedback_points):
 		final_mark_points = self.get_final_mark_points()
 		self.database.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE scale_id = (?)", (scale_id, ))
 		comment_points = self.get_comment_points(team)
@@ -126,13 +136,14 @@ class StudentDatabase:
 		too_friendly_points = self.get_too_friendly_points()
 		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
 		duration_points = self.get_duration_points(team, final_mark_points)
-		self.database.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE scale_id = (?)", (scale_id, ))
+		self.database.execute("UPDATE scales SET duration_points ="+str(duration_points)+" WHERE scale_id = (?)", (scale_id, ))
 		flags_points = 0
-		feedback_total_points = 0
+		feedback_total_points = self.get_feedback_total_points(feedback_points)
 		total_points = comment_points + final_mark_points + too_friendly_points + duration_points + flags_points + feedback_total_points
-		self.database.execute("UPDATE scales SET too_friendly_points ="+str(total_points)+" WHERE scale_id = (?)", (scale_id, ))
+		self.database.execute("UPDATE scales SET total_points ="+str(total_points)+" WHERE scale_id = (?)", (scale_id, ))
 		self.database.commit()
 
+	#scale teams database creations
 	def	save_scale_team(self, team):
 		# checking that the evaluation did actually happen
 		if not team['filled_at']:
@@ -151,6 +162,7 @@ class StudentDatabase:
 		data = response.json()
 		feedback_points = 0
 		for i in (data['feedback_details']):
+			cursor.execute("UPDATE scales SET feedback_"+i['kind']+" = "+str(i['rate'])+" WHERE id = "+str(scale_id))
 			feedback_points += i['rate']
 		executable = "UPDATE scales SET feedback_points = "+str(feedback_points)+" WHERE id = "+str(scale_id)
 		cursor.execute(executable)
@@ -161,7 +173,7 @@ class StudentDatabase:
 				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
 				cursor.execute(executable)
 			i += 1
-		self.calculate_eval_points(scale_id, team)
+		self.calculate_eval_points(scale_id, team, feedback_points)
 		self.database.commit()
 		return
 	
@@ -179,6 +191,7 @@ class StudentDatabase:
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time, ))
 		self.database.commit()
 
+	#project database creation
 	def	save_project(self, project):
 		for i in project:
 			for w in (i['campus']):
