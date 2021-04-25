@@ -28,5 +28,6 @@ url = "feedbacks/"+str(3052884)
 response = ic.get(url)
 data = response.json()
 feedback_points = 0
+print (data['comment'])
 for i in (data['feedback_details']):
     print (i['kind'])

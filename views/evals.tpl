@@ -41,7 +41,7 @@
   <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
   </div>
   <div class="footer_rightcolumn">
-  <p style="float:left">@hlaineka</p>
+  <p style="float:left position: relative; left:15px;">@hlaineka</p>
   </div>
 </div>
 

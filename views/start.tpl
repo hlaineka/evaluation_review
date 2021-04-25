@@ -8,11 +8,10 @@
 <body>
 <div class="topnav">
   <div class="topnav_leftcolumn">
-	<a href="/evals" style="float:right">Evaluations</a>
-	<a href="/students" style="float:right">Students</a>
+	<p style="float:right">HI</p>
   </div>
   <div class="topnav_rightcolumn">
-  <a href="/search" style="float:left">Search</a>
+  <p style="float:left">VE</p>
   </div>
 </div>
 <div class="row">

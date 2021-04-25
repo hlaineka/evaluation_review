@@ -37,15 +37,23 @@ def students():
 	html_str = web.get_students()
 	return html_str
 
-@route('/evals')
-def evals():
-	html_str = web.get_evals()
-	return html_str
-
 @route('/student/<login>')
 def student(login):
 	html_str = web.get_studentpage(login)
 	return html_str
+
+@route('/evals')
+def evals():
+	page = request.query.page or 1
+	html_str = web.get_evals(page)
+	return html_str
+
+
+@route('/eval/<eval_id>')
+def student(eval_id):
+	html_str = web.get_eval(eval_id)
+	return html_str
+
 
 @route('/images/<picture>')
 def serve_pictures(picture):

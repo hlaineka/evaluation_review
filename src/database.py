@@ -57,7 +57,7 @@ class StudentDatabase:
 
 	def get_eval(self, id):
 		cursor = self.database.cursor()
-		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_rating, feedback_total_points FROM scales WHERE scale_id ="+str(id))
+		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_points, feedback_total_points FROM scales WHERE id ="+str(id)).fetchone()
 		return one_eval
 
 	def get_evals(self, start = 0, amount = 20, order = 'total_points', start_date = None, end_date = None):
@@ -68,8 +68,10 @@ class StudentDatabase:
 			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "+start_date+" AND "+end_date+" ORDER BY "+order+" OFFSET "+str(start)+" ROWS FETCH NEXT "+str(amount)+"ROWS ONLY")
 		return evals
 
-	def get_project_name(id):
-		
+	def get_project_name(self, id):
+		project = self.database.execute("SELECT slug FROM projects WHERE project_id = "+str(id)).fetchone()
+		project_name = project[0]
+		return (project_name)
 
 
 	#student database creation
@@ -153,6 +155,10 @@ class StudentDatabase:
 		# checking that the evaluation did actually happen
 		if not team['filled_at']:
 			return
+		#adding only evaluations that happened after c-piscine for the test version, well this does now work :D
+		project = self.database.execute("SELECT name FROM projects WHERE project_id = "+str(team['team']['project_id'])).fetchone()
+		if not project:
+			return
 		scale_id = team['id']
 		feedback_id = team['feedbacks'][0]['id']
 		start_time = datetime.strptime(team['begin_at'], timeformat)
@@ -171,10 +177,11 @@ class StudentDatabase:
 			feedback_points += i['rate']
 		executable = "UPDATE scales SET feedback_points = "+str(feedback_points)+" WHERE id = "+str(scale_id)
 		cursor.execute(executable)
+		cursor.execute('UPDATE scales SET feedback_comment = (?) WHERE id = '+str(scale_id), (data['comment'], ))
 		i = 0
 		# adding the correcteds
 		for person in team['correcteds']:
-			if (i < 3):
+			if (i < 4):
 				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
 				cursor.execute(executable)
 			i += 1

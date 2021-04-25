@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-%
-<link rel="stylesheet" href="static/{{style}}">
-%end
+<link rel="stylesheet" href="/static/{{style}}">
 </head>
 <body>
 <div class="topnav">
@@ -21,11 +19,21 @@
 		<h1>EVALUATION</h1>
 	</div>
     <div class="card">
-		
-		
-		("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2,
-		corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_rating, feedback_total_points
-		FROM scales WHERE scale_id ="+str(id))
+		<p>Project name: {{project_name}}</p>
+		<p>Corrector: {{corrector}}</p>
+		<p>Correcteds: {{correcteds}}<p>
+		<p>Too friendly points: NOT ADDED</p>
+		<p>Comment: {{comment}}</p>
+		<p>Comment points: {{comment_points}}</p>
+		<p>Final mark: {{final_mark}}</p>
+		<p>Final mark points: {{final_mark_points}}</p>
+		<p>Begin at: {{begin_at}}</p>
+		<p>Duration (in seconds): {{duration}}</p>
+		<p>Duration points: {{duration_points}}</p>
+		<p>Flags points: NOT ADDED</p>
+		<p>Feedback comment: {{feedback_comment}}</p>
+		<p>Feedback rating (max 12): {{feedback_rating}}</p>
+		<p>Feedback points: {{feedback_points}}</p>
     </div>
   </div>
   <div class="rightcolumn">
