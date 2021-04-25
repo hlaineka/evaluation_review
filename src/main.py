@@ -45,7 +45,9 @@ def student(login):
 @route('/evals')
 def evals():
 	page = request.query.page or 1
-	html_str = web.get_evals(page)
+	start = request.query.get('eval_start') or None
+	end = request.query.get('eval_end') or None
+	html_str = web.get_evals(page=page, start=start, end=end)
 	return html_str
 
 
@@ -54,6 +56,18 @@ def student(eval_id):
 	html_str = web.get_eval(eval_id)
 	return html_str
 
+@route('/search')
+def search():
+	search_get = request.query.decode()
+	eval_start = search_get.get('eval_start')
+	eval_end = search_get.get('eval_end')
+	errorstr = ''
+	if eval_start and eval_end:
+		redirect("/evals?eval_start="+eval_start+"&eval_end="+eval_end)
+	if eval_start or eval_end:
+		errorstr = "Select start and end date"
+	html_str = web.get_search(errorstr)
+	return html_str
 
 @route('/images/<picture>')
 def serve_pictures(picture):

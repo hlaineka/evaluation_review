@@ -38,16 +38,19 @@ class WebInterface:
 		return template('index', style="styles.css")
 
 	#page listing all the evaluations
-	def get_evals(self, page=1):
-		start = (int(page) - 1) * 20
-		evals = self.student_database.get_evals(start=start)
+	def get_evals(self, start=None, end=None, page=1):
+		start_index = (int(page) - 1) * 20
+		evals = self.student_database.get_evals(start=start_index, start_date=start, end_date=end)
 		html_insert = ''
 		if not evals:
 			return (template('evals', evals=html_insert, style="styles.css"))
-		if not (page == 1):
-			html_insert += '<a href="/evals?page='+str(int(page) - 1)+'">prev   </a>'
+		date_str = ''
+		if (start and end):
+			date_str = "&eval_start="+start+"&eval_end="+end
+		if (int(page) > 1):
+			html_insert += '<a href="/evals?page='+str(int(page) - 1)+date_str+'">prev   </a>'
 		if evals:
-			html_insert += '<a href="/evals?page='+str(int(page) + 1)+'">   next</a><br><br>'
+			html_insert += '<a href="/evals?page='+str(int(page) + 1)+date_str+'">   next</a><br><br>'
 		for data in evals:
 				html_insert += '<a href="/eval/'+str(data[1])+'">'+str(data[1])+'</a><br>total_points: '+str(data[0])+'<br>time: '+data[3]+'<br>corrector: '+data[4]+'<br>correcteds: '+data[5]
 				if data[6]:
@@ -82,3 +85,6 @@ class WebInterface:
 		feedback_rating = one_eval[18]
 		feedback_points = one_eval[19]
 		return template('eval', one_eval=one_eval, project_name=project_name, corrector=corrector, correcteds=correcteds, style="styles.css", comment=comment, comment_points=comment_points, final_mark=final_mark, final_mark_points=final_mark_points, begin_at = begin_at, duration=duration, duration_points=duration_points, feedback_comment=feedback_comment, feedback_rating=feedback_rating, feedback_points=feedback_points)
+
+	def get_search(self, errorstr=''):
+		return(template('search', style="styles.css", errorstr=errorstr))

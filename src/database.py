@@ -60,12 +60,18 @@ class StudentDatabase:
 		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_points, feedback_total_points FROM scales WHERE id ="+str(id)).fetchone()
 		return one_eval
 
-	def get_evals(self, start = 0, amount = 20, order = 'total_points', start_date = None, end_date = None):
+	def get_evals(self, start = 0, amount = 20, order = 'total_points', start_date=None, end_date=None):
 		cursor = self.database.cursor()
 		if (end_date is None and start_date is None):
 			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales ORDER BY "+order+" LIMIT "+str(amount)+" OFFSET "+str(start))
 		else:
-			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "+start_date+" AND "+end_date+" ORDER BY "+order+" OFFSET "+str(start)+" ROWS FETCH NEXT "+str(amount)+"ROWS ONLY")
+			start_time = datetime.strptime(start_date, '%Y-%m-%d')
+			start_time = start_time.replace(hour=00, minute=00, second=00)
+			end_time = datetime.strptime(end_date, '%Y-%m-%d')
+			end_time = end_time.replace(hour=23, minute=59, second=59)
+			start_str = start_time.strftime(timeformat_sql)
+			end_str = end_time.strftime(timeformat_sql)
+			evals = cursor.execute('SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "'+start_str+'" AND "'+end_str+'" ORDER BY '+order+' LIMIT '+str(amount)+' OFFSET '+str(start))
 		return evals
 
 	def get_project_name(self, id):
