@@ -23,9 +23,14 @@
      <div id="content">
 	    <h2>DATABASE CREATION</h2>
 			<p>Before you can use the app, you need to create the database. It will take some time!</p>
-			  <form action="http://localhost:6660" method="post" id="button" class="submit_form">
-        <input class="submit" type="submit" name="start" value="Create Database" />
-        </form>
+      <p>If you do not want to wait forever for the database to build, select timeframe to fetch evals! If you do not change the timeframe, database will be fetched from april 18. to april 25. of 2021. Longer = bigger queries might exceed the allowed hourly rate for this app</p>
+			  <form action="/wait" method="get" id="button">
+		      <label for="start">Start date:</label>
+		      <input type="date" id="eval_start" name="eval_start" value="2021-04-18">
+		      <label for="start">End date:</label>
+		      <input type="date" id="eval_end" name="eval_end" value=2021-04-25>
+		      <input type="submit" id="button" value="Create database">
+	      </form>
         <br>
         <br>
         <br>

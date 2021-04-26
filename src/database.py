@@ -11,7 +11,9 @@ timeformat_sql = '%Y-%m-%d %H:%M:%S'
 
 class StudentDatabase:
 	#Function used to initialize the database. The creation takes time!
-	def init_database(self):
+	#For efficiency while developing the database, init will check from table "tables"
+	#if the next part of database creation is finished and only continues when necessary
+	def init_database(self, start, end):
 		if not (path.exists('./student.db')):
 			self.database = sqlite3.connect('./student.db')
 			self.database.execute("CREATE TABLE tables (name TEXT, status INT, created DATETIME, updated DATETIME)")
@@ -34,14 +36,19 @@ class StudentDatabase:
 		scales_ready = cursor.execute("SELECT status FROM tables WHERE name = \"scales\"").fetchone()
 		if not (scales_ready[0]):
 			self.database.execute("drop table if exists scales")
-			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 TEXT, corrected2 TEXT, corrected3 TEXT, corrected4 INT, too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_interested INT, feedback_nice INT, feedback_punctuality INT, feedback_rigorous INT, feedback_total_points INT DEFAULT 0)")
-			self.save_scale_teams()
+			self.database.execute("CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, begin_at DATETIME, corrected1 TEXT, corrected2 TEXT, corrected3 TEXT, corrected4 INT, too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id INT, feedback_points INT, feedback_interested INT, feedback_nice INT, feedback_punctuality INT, feedback_rigorous INT, feedback_total_points INT DEFAULT 0, team_id INT)")
+			self.save_scale_teams(start, end)
+		eval_points_ready = cursor.execute("SELECT status FROM tables WHERE name = \"eval_points\"").fetchone()
+		if not (eval_points_ready[0]):
+			self.save_eval_points()
 		self.database.commit()
 
 	def __init__(self):
 		self.database = None
+		self.start = ''
+		self.end = ''
 
-	#getter for others to use
+	#getters for others to use
 	def get_database(self):
 		return self.database
 
@@ -69,6 +76,8 @@ class StudentDatabase:
 			start_time = start_time.replace(hour=00, minute=00, second=00)
 			end_time = datetime.strptime(end_date, '%Y-%m-%d')
 			end_time = end_time.replace(hour=23, minute=59, second=59)
+			if start_time < start or end_time > end:
+				return None
 			start_str = start_time.strftime(timeformat_sql)
 			end_str = end_time.strftime(timeformat_sql)
 			evals = cursor.execute('SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "'+start_str+'" AND "'+end_str+'" ORDER BY '+order+' LIMIT '+str(amount)+' OFFSET '+str(start))
@@ -107,22 +116,23 @@ class StudentDatabase:
 
 	#point calculation for evals
 	def	get_comment_points(self, team):
-		comment_len = len(team['comment'])
+		comment_len = len(team[5])
 		comment_points = 0
 		if (comment_len > 180):
-			comment_points = 1
+			comment_points = 5
 		return comment_points
 
-	def	get_final_mark_points(self):
+	def	get_final_mark_points(self, team_id):
+		final_marks = self.database.execute("SELECT final_mark FROM scales WHERE team_id ="+str(team_id))
 		return 0
 
 	def get_too_friendly_points(self):
 		return 0
 
 	def get_duration_points(self, team, final_mark_points):
-		start_time = datetime.strptime(team['begin_at'], timeformat)
-		end_time = datetime.strptime(team['filled_at'], timeformat)
-		target_time = team['scale']['duration']
+		start_time = datetime.strptime(team[9], timeformat_sql)
+		end_time = datetime.strptime(team[15], timeformat_sql)
+		target_time = team[16]
 		minimum_time = target_time * 0.66
 		duration = (end_time - start_time).total_seconds()
 		duration_points = 0
@@ -156,24 +166,46 @@ class StudentDatabase:
 		cursor.execute("UPDATE scales SET total_points ="+str(total_points)+" WHERE id = (?)", (scale_id, ))
 		self.database.commit()
 
+	def save_eval_points(self):
+		cursor = self.database.cursor()
+		evals = cursor.execute("SELECT * FROM scales")
+		for i in evals:
+			print("Calculating points on eval: "+i[2])
+			self.calculate_eval_points(i[2], i, i[23])
+
 	#scale teams database creations
 	def	save_scale_team(self, team):
 		# checking that the evaluation did actually happen
-		if not team['filled_at']:
+		if team['truant'] or (not team['feedback']) or (not team['feedback'][0]):
 			return
-		#adding only evaluations that happened after c-piscine for the test version, well this does now work :D
+		#adding only evaluations that happened after c-piscine for the test version
 		project = self.database.execute("SELECT name FROM projects WHERE project_id = "+str(team['team']['project_id'])).fetchone()
 		if not project:
 			return
+		#saving some values for later use
 		scale_id = team['id']
 		feedback_id = team['feedbacks'][0]['id']
 		start_time = datetime.strptime(team['begin_at'], timeformat)
 		end_time = datetime.strptime(team['filled_at'], timeformat)
 		begin_str = start_time.strftime(timeformat_sql)
 		filled_str = end_time.strftime(timeformat_sql)
+		#saving most of the data, those that do not need any more processing.
 		cursor = self.database.cursor()
-		cursor.execute("INSERT INTO scales (corrector, id, scale_id, project_id, comment, final_mark, begin_at, filled_at, duration, feedback_comment, feedback_rating, feedback_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ('hlaineka', team['id'], team['scale_id'], team['team']['project_id'], team['comment'], team['final_mark'], begin_str, filled_str, team['scale']['duration'], team['feedbacks'][0]['comment'], team['feedbacks'][0]['rating'], team['feedbacks'][0]['id'] ))
-		# detailed info on the feedback rating points
+		cursor.execute("INSERT INTO scales (corrector, id, scale_id, project_id, comment, final_mark, begin_at, filled_at, duration, feedback_comment, feedback_rating, feedback_id, team_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (team['corrector']['login'], team['id'], team['scale_id'], team['team']['project_id'], team['comment'], team['final_mark'], begin_str, filled_str, team['scale']['duration'], team['feedbacks'][0]['comment'], team['feedbacks'][0]['rating'], team['feedbacks'][0]['id'], team['team']['id'] ))
+		# add correcteds and removing evaluations with people with no proper login
+		i = 0
+		pattern = re.compile('3b3')
+		for person in team['correcteds']:
+			if (pattern.search(person['login'])):
+				cursor.execute('DELETE FROM scales WHERE id = '+str(scale_id))
+				self.database.commit()
+				return
+			if (i < 4):
+				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
+				cursor.execute(executable)
+			i += 1
+		# saving detailed info on the feedback rating points, the feedback is fetched from API. All the points given by the
+		# correteds are added up for more accurete evaluation review
 		url = "feedbacks/"+str(feedback_id)
 		response = ic.get(url)
 		data = response.json()
@@ -184,27 +216,27 @@ class StudentDatabase:
 		executable = "UPDATE scales SET feedback_points = "+str(feedback_points)+" WHERE id = "+str(scale_id)
 		cursor.execute(executable)
 		cursor.execute('UPDATE scales SET feedback_comment = (?) WHERE id = '+str(scale_id), (data['comment'], ))
-		i = 0
-		# adding the correcteds
-		for person in team['correcteds']:
-			if (i < 4):
-				executable = "UPDATE scales SET corrected"+str(i+1)+" = \""+person['login']+"\" WHERE id = "+str(scale_id)
-				cursor.execute(executable)
-			i += 1
-		self.calculate_eval_points(scale_id, team, feedback_points)
 		self.database.commit()
 		return
 	
-	def save_student_teams(self):
-		file = open('data.json')
-		json_dump = file.read()
-		data = json.loads(json_dump)
+	def save_student_teams(self, student_id, start, end):
+		if not start:
+			start = "2021-04-01"
+		if not end:
+			end = "2021-04-25"
+		url = 'users/'+str(student_id)+'/scale_teams/as_corrector'
+		kwarqs = {'range[created_at]': end+","+start}
+		data = ic.pages_threaded(url, kwarqs)
 		for i in data:
 			for w in i:
 				self.save_scale_team(w)
 
-	def	save_scale_teams(self):
-		self.save_student_teams()
+	def	save_scale_teams(self, start, end):
+		cursor = self.database.cursor()
+		student_ids = cursor.execute("SELECT id FROM students")
+		for i in student_ids:
+			print("saving student: "+i)
+			self.save_student_teams(i[0], start, end)
 		time = datetime.now().strftime(timeformat_sql)
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time, ))
 		self.database.commit()

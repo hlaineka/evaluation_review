@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-%
-<link rel="stylesheet" href="static/{{style}}">
-%end
+<link rel="stylesheet" href="/static/{{style}}">
 </head>
 <body>
 <div class="topnav">
@@ -18,18 +16,10 @@
 <div class="row">
 	<div class="leftcolumn">
 	<div class="card2">
-		<h1>SEARCH</h1>
+		<h1>EVALUATION</h1>
 	</div>
     <div class="card">
-    <h5>Evaluation search</h5>
-	<p>{{errorstr}}</p>
-	<form action="/search" method="get">
-		<label for="start">Start date:</label>
-		<input type="date" id="start" name="start">
-		<label for="start">End date:</label>
-		<input type="date" id="end" name="end">
-		<input type="submit" value="Search">
-	</form>
+		
     </div>
   </div>
   <div class="rightcolumn">
@@ -49,7 +39,7 @@
   <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
   </div>
   <div class="footer_rightcolumn">
-  <p style="float:left position: relative; left:15px;">@hlaineka</p>
+  <p style="float:left">@hlaineka</p>
   </div>
 </div>
 

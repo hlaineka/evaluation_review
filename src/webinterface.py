@@ -42,6 +42,9 @@ class WebInterface:
 		start_index = (int(page) - 1) * 20
 		evals = self.student_database.get_evals(start=start_index, start_date=start, end_date=end)
 		html_insert = ''
+		if (not evals) and start:
+			html_insert = '<p>error with search dates</p>'
+			return (template('evals', evals=html_insert, style="styles.css"))
 		if not evals:
 			return (template('evals', evals=html_insert, style="styles.css"))
 		date_str = ''
