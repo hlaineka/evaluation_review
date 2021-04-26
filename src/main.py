@@ -11,6 +11,8 @@ studentdb = StudentDatabase()
 web = WebInterface(studentdb)
 user = ''
 
+# Bottle calls for different pages.
+
 @route('/')
 def start():
 	html_str = web.get_start()

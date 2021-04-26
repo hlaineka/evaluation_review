@@ -14,7 +14,7 @@ class WebInterface:
 		if data:
 			html_insert = ''
 			for student in data:
-				html_insert += '<a href="/student/'+student[1]+'">'+student[1]+'</a>, <a href="'+student[2]+'">intra</a><br>'+'\n'
+				html_insert += '<a href="/student/'+student['login']+'">'+student['login']+'</a>, total points: '+str(student['total_points'])+'<br>\n'
 			return template('students', students=html_insert, style="styles.css")
 		else:
 			return HTTPResponse(status=204)
@@ -22,11 +22,23 @@ class WebInterface:
 
 	# get the page of a single student
 	def get_studentpage(self, login):
-		data = self.student_database.get_student(login)
-		if data:
-			return template('student', student=data)
-		else:
-			return HTTPResponse(status=204)
+		student_data = self.student_database.get_student(login)
+		student_evals = self.student_database.get_evals(login)
+		html_insert = '<h1>'+login+'</h1></div><div class="card">'
+		html_insert += '<p>Total points: '+str(student_data['total_points'])+'</p>'
+		html_insert += '<p>Eval point avarage: '+str(student_data['avarage_points'])+'</p>'
+		html_insert += '<p>Amount of evals: '+str(student_data['evals'])+'</p>'
+		html_insert += '<p>Too friendly points: '+str(student_data['too_friendly_points'])+'</p><br><h2>Students evals</h2>'
+		for data in student_evals:
+			html_insert += '<a href="/eval/'+str(data['id'])+'">'+str(data['id'])+'</a><br>total_points: '+str(data['total_points'])+'<br>time: '+data['begin_at']+'<br>corrector: '+data['corrector']+'<br>correcteds: '+data['corrected1']
+			if data['corrected2']:
+				html_insert += ' '+data['corrected2']
+			if data['corrected3']:
+				html_insert += ' '+data['corrected3']
+			if data['corrected4']:
+				html_insert += ' '+data['corrected4']
+			html_insert += '<br><br>\n'
+		return template('student', html_insert=html_insert)
 
 	#the landing page
 	def get_start(self):
@@ -65,7 +77,8 @@ class WebInterface:
 				html_insert += '<br><br>\n'
 		return template('evals', evals=html_insert, style="styles.css")
 
-	#page for single eval with more information
+	#page for single eval with more information. For some reason I did not get the python code to work on templates,
+	# so I am passing every value separately..
 	def get_eval(self, scale_id):
 		one_eval = self.student_database.get_eval(scale_id)
 		project_name = self.student_database.get_project_name(one_eval['project_id'])
@@ -87,7 +100,8 @@ class WebInterface:
 		feedback_comment = one_eval['feedback_comment']
 		feedback_rating = one_eval['feedback_points']
 		feedback_points = one_eval['feedback_total_points']
-		return template('eval', one_eval=one_eval, project_name=project_name, corrector=corrector, correcteds=correcteds, style="styles.css", comment=comment, comment_points=comment_points, final_mark=final_mark, final_mark_points=final_mark_points, begin_at = begin_at, duration=duration, duration_points=duration_points, feedback_comment=feedback_comment, feedback_rating=feedback_rating, feedback_points=feedback_points)
+		too_friendly_points = one_eval['too_friendly_points']
+		return template('eval', too_friendly_points=too_friendly_points, one_eval=one_eval, project_name=project_name, corrector=corrector, correcteds=correcteds, style="styles.css", comment=comment, comment_points=comment_points, final_mark=final_mark, final_mark_points=final_mark_points, begin_at = begin_at, duration=duration, duration_points=duration_points, feedback_comment=feedback_comment, feedback_rating=feedback_rating, feedback_points=feedback_points)
 
 	def get_search(self, errorstr=''):
 		return(template('search', style="styles.css", errorstr=errorstr))

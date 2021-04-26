@@ -18,7 +18,7 @@ class StudentDatabase:
 			self.database = sqlite3.connect('./student.db')
 			self.database.row_factory = sqlite3.Row
 			self.database.execute("CREATE TABLE tables (name TEXT, status INT, created DATETIME, updated DATETIME)")
-			self.database.execute("INSERT INTO tables (name, status) VALUES (\"students\", 0), (\"scales\", 0), (\"projects\", 0), (\"student_points\", 0), (\"eval_points\", 0)")
+			self.database.execute("INSERT INTO tables (name, status) VALUES (\"students\", 0), (\"scales\", 0), (\"projects\", 0), (\"student_points\", 0), (\"eval_points\", 0), (\"too_friendly\", 0)")
 			self.database.commit()
 		else:
 			self.database = sqlite3.connect('./student.db')
@@ -28,7 +28,7 @@ class StudentDatabase:
 		student_ready = cursor.execute("SELECT status FROM tables WHERE name = \"students\"").fetchone()
 		if not (student_ready['status']):
 			self.database.execute("drop table if exists students")
-			self.database.execute("CREATE TABLE students(id INTEGER, login TEXT, url TEXT, total_points INT, evals INT, avarage_points INT)")
+			self.database.execute("CREATE TABLE students(id INTEGER, login TEXT, url TEXT, too_friendly_points INT DEFAULT 0, total_points INT DEFAULT 0, evals INT DEFAULT 0, avarage_points INT DEFAULT 0)")
 			self.save_students()
 		projects_ready = cursor.execute("SELECT status FROM tables WHERE name = \"projects\"").fetchone()
 		if not (projects_ready['status']):
@@ -43,6 +43,12 @@ class StudentDatabase:
 		eval_points_ready = cursor.execute("SELECT status FROM tables WHERE name = \"eval_points\"").fetchone()
 		if not (eval_points_ready['status']):
 			self.save_eval_points()
+		friendly_points_ready = cursor.execute("SELECT status FROM tables WHERE name = \"too_friendly\"").fetchone()
+		if not (friendly_points_ready['status']):
+			self.save_friendly_points()
+		student_points_ready = cursor.execute("SELECT status FROM tables WHERE name = \"student_points\"").fetchone()
+		if not (student_points_ready['status']):
+			self.save_student_points()
 		self.database.commit()
 
 	def __init__(self):
@@ -56,12 +62,12 @@ class StudentDatabase:
 
 	def get_students(self):
 		cursor = self.database.cursor()
-		rows = cursor.execute("SELECT id, login, url FROM students")
+		rows = cursor.execute("SELECT id, login, url, total_points FROM students ORDER BY total_points=0, total_points, login")
 		return (rows)
 
 	def get_student(self, login):
 		cursor = self.database.cursor()
-		student = cursor.execute("SELECT id, login, url FROM students WHERE login = ?", (login, )).fetchone()
+		student = cursor.execute("SELECT id, login, url, too_friendly_points, total_points, evals, avarage_points FROM students WHERE login = ?", (login, )).fetchone()
 		return (student)
 
 	def get_eval(self, id):
@@ -69,17 +75,17 @@ class StudentDatabase:
 		one_eval = cursor.execute("SELECT corrector, total_points, id, project_id, comment, comment_points, final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, corrected4, too_friendly_points, duration, duration_points, flags_points, feedback_comment, feedback_points, feedback_total_points FROM scales WHERE id ="+str(id)).fetchone()
 		return one_eval
 
-	def get_evals(self, start = 0, amount = 20, order = 'total_points', start_date=None, end_date=None):
+	def get_evals(self, login = None, start = 0, amount = 20, order = 'total_points', start_date=None, end_date=None):
 		cursor = self.database.cursor()
-		if (end_date is None and start_date is None):
+		if login:
+			evals = cursor.execute('SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE corrector = "'+login+'" ORDER BY '+order)
+		elif (end_date is None and start_date is None):
 			evals = cursor.execute("SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales ORDER BY "+order+" LIMIT "+str(amount)+" OFFSET "+str(start))
 		else:
 			start_time = datetime.strptime(start_date, '%Y-%m-%d')
 			start_time = start_time.replace(hour=00, minute=00, second=00)
 			end_time = datetime.strptime(end_date, '%Y-%m-%d')
 			end_time = end_time.replace(hour=23, minute=59, second=59)
-			if start_time < start or end_time > end:
-				return None
 			start_str = start_time.strftime(timeformat_sql)
 			end_str = end_time.strftime(timeformat_sql)
 			evals = cursor.execute('SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, corrected4 FROM scales WHERE begin_at BETWEEN "'+start_str+'" AND "'+end_str+'" ORDER BY '+order+' LIMIT '+str(amount)+' OFFSET '+str(start))
@@ -116,6 +122,72 @@ class StudentDatabase:
 		self.database.commit()
 		return
 
+	#saves student points
+	def get_student_points(self, login):
+		cursor = self.database.cursor()
+		#check that the person has evals
+		corrected_list = cursor.execute('SELECT total_points FROM scales WHERE corrector ="'+login+'"').fetchall()
+		if len(corrected_list) == 0:
+			return
+		amount = 0
+		total = 0
+		for i in corrected_list:
+			total += i['total_points']
+			amount += 1
+		avarage = total / amount
+		avarage = "{:.1f}".format(avarage)
+		cursor.execute('UPDATE students SET evals ='+str(amount)+', avarage_points = '+str(avarage)+', total_points = too_friendly_points + '+str(avarage)+' WHERE login = ?', (login, ))
+		self.database.commit()
+
+	def save_student_points(self):
+		cursor = self.database.cursor()
+		students = cursor.execute("SELECT login FROM students").fetchall()
+		for i in students:
+			self.get_student_points(i['login'])
+		time = datetime.now().strftime(timeformat_sql)
+		cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"student_points\"", (time, ))
+		self.database.commit()
+
+	#too friendly -points calculated separately
+	def get_too_friendly_points(self, login):
+		cursor = self.database.cursor()
+		#check that the person has evals
+		corrected_list = cursor.execute('SELECT corrected1 FROM scales WHERE corrector ="'+login+'"').fetchall()
+		if len(corrected_list) == 0:
+			return
+		corrected_dict= {}
+		for i in corrected_list:
+			if not i['corrected1'] in corrected_dict:
+				corrected_dict[i['corrected1']] = 0
+				amount = 0
+				for w in corrected_list:
+					if w['corrected1'] == i['corrected1']:
+						amount += 1
+				corrected_dict[i['corrected1']] += amount
+		corrected_amount = len(corrected_dict)
+		print(corrected_dict)
+		eval_ids = cursor.execute('SELECT id, corrected1 FROM scales WHERE corrector = "'+login+'"').fetchall()
+		for i in eval_ids:
+			eval_too_friendly_points = 0
+			if (corrected_dict[i['corrected1']]) > 2:
+				eval_too_friendly_points = -10
+			cursor.execute("UPDATE scales SET too_friendly_points ="+str(eval_too_friendly_points)+" WHERE id = (?)", (i['id'], ))
+			cursor.execute("UPDATE scales SET total_points = total_points + "+str(eval_too_friendly_points)+" WHERE id = (?)", (i['id'], ))
+		if corrected_amount < 10:
+			cursor.execute("UPDATE students SET too_friendly_points ="+str(-10)+" WHERE login = (?)", (login, ))
+		self.database.commit()
+
+	def save_friendly_points(self):
+		cursor = self.database.cursor()
+		students = cursor.execute("SELECT login FROM students").fetchall()
+		for i in students:
+			self.get_too_friendly_points(i['login'])
+		time = datetime.now().strftime(timeformat_sql)
+		cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"too_friendly\"", (time, ))
+		self.database.commit()
+		
+
+
 	#point calculation for evals
 	def	get_comment_points(self, team):
 		comment_len = len(team[5])
@@ -129,7 +201,6 @@ class StudentDatabase:
 	def	get_final_mark_points(self, team):
 		final_marks = self.database.execute("SELECT final_mark FROM scales WHERE team_id ="+str(team['team_id'])).fetchall()
 		total = len(final_marks)
-		print(total)
 		sum = 0
 		for i in final_marks:
 			sum += i['final_mark']
@@ -142,13 +213,6 @@ class StudentDatabase:
 			final_mark_points = 0
 		return final_mark_points
 
-	def get_too_friendly_points(self):
-		cursor.execute("SELECT corrected1, corrected2, corrected3, corrected4 FROM scales WHERE")
-
-		cursor.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE id = (?)", (scale_id, ))
-		
-		return 0
-
 	def get_duration_points(self, team, final_mark_points):
 		start_time = datetime.strptime(team[9], timeformat_sql)
 		end_time = datetime.strptime(team[15], timeformat_sql)
@@ -156,9 +220,9 @@ class StudentDatabase:
 		minimum_time = target_time * 0.66
 		duration = (end_time - start_time).total_seconds()
 		duration_points = 0
-		if (duration < minimum_time and final_mark_points > 0):
+		if (duration < minimum_time and final_mark_points <= 0):
 			duration_points = -42
-		elif duration < target_time:
+		elif duration < target_time and final_mark_points <= 0:
 			duration_points = -10
 		elif duration > target_time * 1.5:
 			duration_points = 20
@@ -188,10 +252,10 @@ class StudentDatabase:
 		cursor = self.database.cursor()
 		evals = cursor.execute("SELECT * FROM scales")
 		for i in evals:
-			print("Calculating points on eval: "+str(i[2]))
 			self.calculate_eval_points(i[2], i, i[23])
 		time = datetime.now().strftime(timeformat_sql)
 		cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"evals_points\"", (time, ))
+		self.database.commit()
 
 	#scale teams database creations
 	def	save_scale_team(self, team):

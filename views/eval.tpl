@@ -22,13 +22,12 @@
 		<p>Project name: {{project_name}}</p>
 		<p>Corrector: {{corrector}}</p>
 		<p>Correcteds: {{correcteds}}<p>
-		<p>Too friendly points: NOT ADDED</p>
+		<p>Too friendly points: {{too_friendly_points}}</p>
 		<p>Comment: {{comment}}</p>
 		<p>Comment points: {{comment_points}}</p>
 		<p>Final mark: {{final_mark}}</p>
 		<p>Final mark points: {{final_mark_points}}</p>
 		<p>Begin at: {{begin_at}}</p>
-		<p>Duration (in seconds): {{duration}}</p>
 		<p>Duration points: {{duration_points}}</p>
 		<p>Flags points: NOT ADDED</p>
 		<p>Feedback comment: {{feedback_comment}}</p>

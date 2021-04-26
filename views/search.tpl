@@ -24,10 +24,10 @@
     <h5>Evaluation search</h5>
 	<p>{{errorstr}}</p>
 	<form action="/search" method="get">
-		<label for="start">Start date:</label>
-		<input type="date" id="start" name="start">
-		<label for="start">End date:</label>
-		<input type="date" id="end" name="end">
+		<label for="eval_start">Start date:</label>
+		<input type="date" id="eval_start" name="eval_start">
+		<label for="eval_end">End date:</label>
+		<input type="date" id="eval_end" name="eval_end">
 		<input type="submit" value="Search">
 	</form>
     </div>

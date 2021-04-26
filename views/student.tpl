@@ -187,10 +187,7 @@ body {
 <div class="row">
 	<div class="leftcolumn">
 	<div class="card2">
-		<h1>{{student[1]}}</h1>
-	</div>
-    <div class="card">
-      <p>Info about the student</p>
+		{{!html_insert}}
     </div>
   </div>
   <div class="rightcolumn">
