@@ -32,7 +32,7 @@
 		<p>Duration points: {{duration_points}}</p>
 		<p>Flags points: NOT ADDED</p>
 		<p>Feedback comment: {{feedback_comment}}</p>
-		<p>Feedback rating (max 12): {{feedback_rating}}</p>
+		<p>Feedback rating (max 16): {{feedback_rating}}</p>
 		<p>Feedback points: {{feedback_points}}</p>
     </div>
   </div>

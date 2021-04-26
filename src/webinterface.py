@@ -55,38 +55,38 @@ class WebInterface:
 		if evals:
 			html_insert += '<a href="/evals?page='+str(int(page) + 1)+date_str+'">   next</a><br><br>'
 		for data in evals:
-				html_insert += '<a href="/eval/'+str(data[1])+'">'+str(data[1])+'</a><br>total_points: '+str(data[0])+'<br>time: '+data[3]+'<br>corrector: '+data[4]+'<br>correcteds: '+data[5]
-				if data[6]:
-					html_insert += ' '+data[6]
-				if data[7]:
-					html_insert += ' '+data[7]
-				if data[8]:
-					html_insert += ' '+data[8]
+				html_insert += '<a href="/eval/'+str(data['id'])+'">'+str(data['id'])+'</a><br>total_points: '+str(data['total_points'])+'<br>time: '+data['begin_at']+'<br>corrector: '+data['corrector']+'<br>correcteds: '+data['corrected1']
+				if data['corrected2']:
+					html_insert += ' '+data['corrected2']
+				if data['corrected3']:
+					html_insert += ' '+data['corrected3']
+				if data['corrected4']:
+					html_insert += ' '+data['corrected4']
 				html_insert += '<br><br>\n'
 		return template('evals', evals=html_insert, style="styles.css")
 
 	#page for single eval with more information
 	def get_eval(self, scale_id):
 		one_eval = self.student_database.get_eval(scale_id)
-		project_name = self.student_database.get_project_name(one_eval[3])
-		correcteds = one_eval[9]
-		if one_eval[10]:
-			correcteds += ', '+one_eval[10]
-		if one_eval[11]:
-			correcteds += ', '+one_eval[11]
-		if one_eval[12]:
-			correcteds += ', '+one_eval[12]
-		corrector = one_eval[0]
-		comment = one_eval[4]
-		comment_points = one_eval[5]
-		final_mark = one_eval[6]
-		final_mark_points = one_eval[7]
-		begin_at = one_eval[8]
-		duration = one_eval[14]
-		duration_points = one_eval[15]
-		feedback_comment = one_eval[17]
-		feedback_rating = one_eval[18]
-		feedback_points = one_eval[19]
+		project_name = self.student_database.get_project_name(one_eval['project_id'])
+		correcteds = one_eval['corrected1']
+		if one_eval['corrected2']:
+			correcteds += ', '+one_eval['corrected2']
+		if one_eval['corrected3']:
+			correcteds += ', '+one_eval['corrected3']
+		if one_eval['corrected4']:
+			correcteds += ', '+one_eval['corrected4']
+		corrector = one_eval['corrector']
+		comment = one_eval['comment']
+		comment_points = one_eval['comment_points']
+		final_mark = one_eval['final_mark']
+		final_mark_points = one_eval['final_mark_points']
+		begin_at = one_eval['begin_at']
+		duration = one_eval['duration']
+		duration_points = one_eval['duration_points']
+		feedback_comment = one_eval['feedback_comment']
+		feedback_rating = one_eval['feedback_points']
+		feedback_points = one_eval['feedback_total_points']
 		return template('eval', one_eval=one_eval, project_name=project_name, corrector=corrector, correcteds=correcteds, style="styles.css", comment=comment, comment_points=comment_points, final_mark=final_mark, final_mark_points=final_mark_points, begin_at = begin_at, duration=duration, duration_points=duration_points, feedback_comment=feedback_comment, feedback_rating=feedback_rating, feedback_points=feedback_points)
 
 	def get_search(self, errorstr=''):
