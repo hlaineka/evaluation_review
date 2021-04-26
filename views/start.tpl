@@ -26,9 +26,9 @@
       <p>If you do not want to wait forever for the database to build, select timeframe to fetch evals! If you do not change the timeframe, database will be fetched from april 18. to april 25. of 2021. Longer = bigger queries might exceed the allowed hourly rate for this app</p>
 			  <form action="/wait" method="get" id="button">
 		      <label for="start">Start date:</label>
-		      <input type="date" id="eval_start" name="eval_start" value="2021-04-18">
+		      <input type="date" id="start" name="start" value="2021-04-18">
 		      <label for="start">End date:</label>
-		      <input type="date" id="eval_end" name="eval_end" value=2021-04-25>
+		      <input type="date" id="end" name="end" value=2021-04-25>
 		      <input type="submit" id="button" value="Create database">
 	      </form>
         <br>

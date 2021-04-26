@@ -127,6 +127,12 @@ class StudentDatabase:
 		return 0
 
 	def get_too_friendly_points(self):
+		cursor.execute("SELECT corrected1, corrected2, corrected3, corrected4 FROM scales WHERE")
+		friends_dict = {'login': '', 'amount': 0}
+		friends_list = None
+		evals = cur
+		cursor.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE id = (?)", (scale_id, ))
+		
 		return 0
 
 	def get_duration_points(self, team, final_mark_points):
@@ -155,8 +161,6 @@ class StudentDatabase:
 		cursor.execute("UPDATE scales SET final_mark_points ="+str(final_mark_points)+" WHERE id = (?)", (scale_id, ))
 		comment_points = self.get_comment_points(team)
 		cursor.execute("UPDATE scales SET comment_points = 1 WHERE id = (?)", (scale_id, ))
-		too_friendly_points = self.get_too_friendly_points()
-		cursor.execute("UPDATE scales SET too_friendly_points ="+str(too_friendly_points)+" WHERE id = (?)", (scale_id, ))
 		duration_points = self.get_duration_points(team, final_mark_points)
 		cursor.execute("UPDATE scales SET duration_points ="+str(duration_points)+" WHERE id = (?)", (scale_id, ))
 		flags_points = 0
@@ -176,7 +180,13 @@ class StudentDatabase:
 	#scale teams database creations
 	def	save_scale_team(self, team):
 		# checking that the evaluation did actually happen
-		if team['truant'] or (not team['feedback']) or (not team['feedback'][0]):
+		if not team:
+			return
+		if team['truant']:
+			return
+		if not team['feedback']:
+			return
+		if not team['feedback'][0]:
 			return
 		#adding only evaluations that happened after c-piscine for the test version
 		project = self.database.execute("SELECT name FROM projects WHERE project_id = "+str(team['team']['project_id'])).fetchone()
@@ -224,18 +234,16 @@ class StudentDatabase:
 			start = "2021-04-01"
 		if not end:
 			end = "2021-04-25"
-		url = 'users/'+str(student_id)+'/scale_teams/as_corrector'
-		kwarqs = {'range[created_at]': end+","+start}
-		data = ic.pages_threaded(url, kwarqs)
+		url = 'users/'+str(student_id)+'/scale_teams/as_corrector?range[begin_at]='+start+','+end
+		data = ic.pages_threaded(url)
 		for i in data:
-			for w in i:
-				self.save_scale_team(w)
+				self.save_scale_team(i)
 
 	def	save_scale_teams(self, start, end):
 		cursor = self.database.cursor()
 		student_ids = cursor.execute("SELECT id FROM students")
 		for i in student_ids:
-			print("saving student: "+i)
+			print("saving student: "+str(i[0]))
 			self.save_student_teams(i[0], start, end)
 		time = datetime.now().strftime(timeformat_sql)
 		self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time, ))

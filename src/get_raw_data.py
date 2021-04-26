@@ -7,27 +7,21 @@ import json
 ic = IntraAPIClient()
 #db = StudentDatabase()
 
-#file = open("data.json", "w")
+file = open("data_test.json", "w")
 #json_dump = file.read()
 #data = json.loads(json_dump)
 #student = db.get_student('hlaineka')
-#student_id = 61981
+student_id = 61981
 #print(student_id)
-#url = "users/"+str(student_id)+"/scale_teams/as_corrector"
-#print(url)
-#response_list = ic.pages(url)
-#for i in (response_list):
-#    for w in i:
- #       print(w)
- #       print('\n')
-#file.write(json.dumps(response_list))
-#file.close()
+start = "2021-04-01"
+end = "2021-04-25"
+url = 'users/'+str(student_id)+'/scale_teams/as_corrector?range[begin_at]='+start+','+end
+print(url)
+response_list = ic.pages(url)
+for i in (response_list):
+    for w in i:
+        print(w)
+        print('\n')
+file.write(json.dumps(response_list))
+file.close()
 
-file = open("feedback_data.json", "w")
-url = "feedbacks/"+str(3052884)
-response = ic.get(url)
-data = response.json()
-feedback_points = 0
-print (data['comment'])
-for i in (data['feedback_details']):
-    print (i['kind'])

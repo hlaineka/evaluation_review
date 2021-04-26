@@ -3,3 +3,4 @@ src/config.yml
 student.db
 src/__pycache__
 documentation_notes.txt
+*.db

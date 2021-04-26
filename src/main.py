@@ -25,7 +25,9 @@ def redirect_to_wait():
 @route('/wait')
 def wait():
 	start = request.query.start or None
-	end = request.query.start or None
+	end = request.query.end or None
+	print(start)
+	print(end)
 	studentdb.init_database(start, end)
 	redirect("/index")
 
