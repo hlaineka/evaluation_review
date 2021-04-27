@@ -1,6 +1,6 @@
 # evaluation_review
 
-##How to install:
+## How to install:
 
 1. Download this repo
 2. Open src/config_example.yml and add UID and SECRET codes
