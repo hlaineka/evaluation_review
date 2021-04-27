@@ -24,7 +24,7 @@
 	    <h2>DATABASE CREATION</h2>
 			<p>Before you can use the app, you need to create the database. It will take some time!</p>
       <p>If you do not want to wait forever for the database to build, select timeframe to fetch evals! If you do not change the timeframe, database will be fetched from april 18. to april 25. of 2021. Longer = bigger queries might exceed the allowed hourly rate for this app</p>
-			<p>It takes about 3-5 mins per week to create the database.</p>
+			<p>It takes about 3-5 mins per week to create the database, sometimes a lot faster, sometimes a lot slower!</p>
         <form action="/wait" method="get" id="button">
 		      <label for="start">Start date:</label>
 		      <input type="date" id="start" name="start" value="2021-04-18">
@@ -40,7 +40,7 @@
      </div>
     <div id="loading">
     <h3 style="text-align:center;">Unicorns are burbing life into the database!</h3>
-    <p style="text-align:center;">It takes about 3-5 mins per week to create the database. Please do not leave this page while database is building!</p>
+    <p style="text-align:center;">It takes about 3-5 mins per week to create the database, sometimes a lot faster, sometimes a lot slower!. Please do not leave this page while database is building!</p>
     %
     <img src="images/{{picture}}">
     %end

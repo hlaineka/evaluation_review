@@ -13,7 +13,7 @@ class WebInterface:
         html_insert = ''
         for student in data:
             html_insert += '<a href="/student/' + student['login'] + '">' + student[
-                'login'] + '</a>, total points: ' + str(student['total_points']) + '<br>\n'
+                'login'] + '</a>, total points: ' + str(student['total_points']) +', points avarage: ' + str(student['avarage_points']) +'<br>\n'
         return template('students', students=html_insert, style="styles.css")
 
     # get the page of a single student with more info and listing of the students evaluations

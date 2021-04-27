@@ -90,7 +90,7 @@ class StudentDatabase:
     def get_students(self):
         cursor = self.database.cursor()
         rows = cursor.execute(
-            "SELECT id, login, url, total_points FROM students ORDER BY total_points=0, total_points, login")
+            "SELECT id, login, url, total_points, avarage_points FROM students ORDER BY total_points=0, avarage_points, login")
         return (rows)
 
     def get_student(self, login):
@@ -168,7 +168,6 @@ class StudentDatabase:
         cursor = self.database.cursor()
         time = datetime.now().strftime(time_format_sql)
         cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"students\"", (time,))
-        print("students saved")
         self.database.commit()
         return
 
@@ -179,7 +178,6 @@ class StudentDatabase:
         self.save_project(response_list)
         time = datetime.now().strftime(time_format_sql)
         self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time,))
-        print("projects saved")
         self.database.commit()
 
     def save_project(self, project):
@@ -197,11 +195,9 @@ class StudentDatabase:
         cursor = self.database.cursor()
         student_ids = cursor.execute("SELECT id, login FROM students")
         for i in student_ids:
-            print('saving teams of student:'+i['login'])
             self.save_student_teams(i['id'], start, end)
         time = datetime.now().strftime(time_format_sql)
         self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time,))
-        print("evaluations saved")
         self.database.commit()
 
     # Saves the scales teams of a one student where they have been the corrector. Fetches only the time frame
@@ -229,7 +225,6 @@ class StudentDatabase:
             return
         # saving some values for later use
         scale_id = team['id']
-        print('save_scale_team: '+str(scale_id))
         feedback_id = team['feedbacks'][0]['id']
         start_time = datetime.strptime(team['begin_at'], time_format)
         end_time = datetime.strptime(team['filled_at'], time_format)
@@ -283,11 +278,9 @@ class StudentDatabase:
         cursor = self.database.cursor()
         evals = cursor.execute("SELECT * FROM scales")
         for i in evals:
-            print('eval points: '+str(i['id']))
             self.calculate_eval_points(i['id'], i, i['feedback_points'])
         time = datetime.now().strftime(time_format_sql)
         cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"eval_points\"", (time,))
-        print("eval points calculated")
         self.database.commit()
 
     # Calculates the eval points of a single evaluation.
@@ -297,7 +290,7 @@ class StudentDatabase:
         cursor.execute("UPDATE scales SET final_mark_points =" + str(final_mark_points) + " WHERE id = (?)",
                        (scale_id,))
         comment_points = self.get_comment_points(team)
-        cursor.execute("UPDATE scales SET comment_points = 1 WHERE id = (?)", (scale_id,))
+        cursor.execute("UPDATE scales SET comment_points = "+str(comment_points)+" WHERE id = (?)", (scale_id,))
         duration_points = self.get_duration_points(team, final_mark_points)
         cursor.execute("UPDATE scales SET duration_points =" + str(duration_points) + " WHERE id = (?)", (scale_id,))
         flags_points = 0
@@ -370,11 +363,9 @@ class StudentDatabase:
         cursor = self.database.cursor()
         students = cursor.execute("SELECT login FROM students").fetchall()
         for i in students:
-            print('friendly points: '+i['login'])
             self.get_too_friendly_points(i['login'])
         time = datetime.now().strftime(time_format_sql)
         cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"too_friendly\"", (time,))
-        print("friendly points calculated")
         self.database.commit()
 
     # too friendly points calculation of a single student. Creates a dictionary with all the names of the people the
@@ -421,11 +412,9 @@ class StudentDatabase:
         cursor = self.database.cursor()
         students = cursor.execute("SELECT login FROM students").fetchall()
         for i in students:
-            print('student points: '+i['login'])
             self.get_student_points(i['login'])
         time = datetime.now().strftime(time_format_sql)
         cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"student_points\"", (time,))
-        print("student points saved")
         self.database.commit()
 
     # Student point saving

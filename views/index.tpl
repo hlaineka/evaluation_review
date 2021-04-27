@@ -103,7 +103,11 @@ The limits of the database creation that come from the hourly request limit and 
 - more work on the IU<br>
 - discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)<br>
 - finetuning the too friendly points: also checking how many times the corrected has evaluated the corrector<br>
-- checking the duration so that the actual duration of the evaluation is also saved and showed in the evaluation page<br><br><br><br>
+- checking the duration so that the actual duration of the evaluation is also saved and showed in the evaluation page<br>
+- If evaluating a project the evaluator has not done them selves might be included somehow. If you have not done it, it
+is really difficult to find more errors than others.<br>
+- working together on a lot of projects and evaluating each other could be taken into account with too friendly points.<br>
++ notes after running a bigger test: cv project seems to give students the lowest points often. Might need some balancing?<br><br><br><br>
 
 <h2><a name="other">OTHER INFO:</a></h2>
 Unicorn burb by Mauro Gatti on Dribbble<br>
