@@ -92,7 +92,7 @@ The limits of the database creation that come from the hourly request limit and 
 - hosting on a server with a big database to allow bettering of the point calculation and student points.<br>
 - more search options, like search evals by project, login or different points, or search students by login, project, etc.<br>
 - database update possibility, the date and time when the database was created is saved.<br>
-- possibility to sort searches and student/eval pages by different options, like certain points, correctors, correcteds, projects, etc.<br>
+- possibility to sort searches and students/evals pages by different options, like certain points, correctors, correcteds, projects, etc. Also the amount of evals per page could be easily implemented.<br>
 - check that search time is within database limits<br>
 - add a rating of different areas (interested, nice, punctuality, rigorous)found on the feedback to eval page<br>
 - secure connection<br>
@@ -101,7 +101,9 @@ The limits of the database creation that come from the hourly request limit and 
 - fine tuning the point system<br>
 - export to .json<br>
 - more work on the IU<br>
-- discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)<br><br><br><br>
+- discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)<br>
+- finetuning the too friendly points: also checking how many times the corrected has evaluated the corrector<br>
+- checking the duration so that the actual duration of the evaluation is also saved and showed in the evaluation page<br><br><br><br>
 
 <h2><a name="other">OTHER INFO:</a></h2>
 Unicorn burb by Mauro Gatti on Dribbble<br>

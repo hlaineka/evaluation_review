@@ -154,7 +154,7 @@ IDEAS FOR THE FUTURE:
 etc.
 - database update possibility, the date and time when the database was created is saved.
 - possibility to sort searches and student/eval pages by different options, like certain points, correctors, correcteds,
-projects, etc.
+projects, etc. Also the amount of evals per page could be easily implemented.
 - check that search time is within database limits
 - add a rating of different areas (interested, nice, punctuality, rigorous)found on the feedback to eval page
 - secure connection
@@ -164,6 +164,8 @@ projects, etc.
 - export to .json
 - more work on the IU
 - discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)
+- finetuning the too friendly points: also checking how many times the corrected has evaluated the corrector
+- checking the duration so that the actual duration of the evaluation is also saved and showed in the evaluation page
 
 OTHER INFO:
 Unicorn burb by Mauro Gatti on Dribbble

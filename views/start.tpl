@@ -73,15 +73,12 @@
   function unicorns(){
       document.getElementById("loading").style.display = "block";
       document.getElementById("content").style.display = "none";
-      
-      timer.start();
    }
    function init(){
      document.getElementById("loading").style.display = "none";
       document.getElementById("content").style.display = "block";
       document.getElementById("button").onsubmit = unicorns;
    }
-   
    window.onload = init;
 </script>
 </body>

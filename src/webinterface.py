@@ -7,7 +7,7 @@ class WebInterface:
         self.student_database = studentdb
         self.page_number = 0
 
-    # gets all the students at Hive Helsinki
+    # Creates a pages where all the students are listed
     def get_students(self):
         data = self.student_database.get_students()
         html_insert = ''
@@ -16,7 +16,9 @@ class WebInterface:
                 'login'] + '</a>, total points: ' + str(student['total_points']) + '<br>\n'
         return template('students', students=html_insert, style="styles.css")
 
-    # get the page of a single student
+    # get the page of a single student with more info and listing of the students evaluations
+    # something wrong with the single student page, the images are not showing and I cannot
+    # make it work
     def get_student_page(self, login):
         student_data = self.student_database.get_student(login)
         student_evals = self.student_database.get_evals(login)
@@ -69,7 +71,9 @@ class WebInterface:
                                                                                      '><br><br> '
         start_str = start or ''
         end_str = end or ''
-        html_insert += '<form action="/evals" method="get"><input type="hidden" name="eval_start" value="' + start_str + '"> <input type="hidden" name="eval_end" value="' + end_str + '"><input type="hidden" name="csv" value=1><button type="submit" value="Submit">Create .csv</button></form> <br><br>'
+        html_insert += '<form action="/evals" method="get"><input type="hidden" name="eval_start" value="' + start_str \
+                       + '"> <input type="hidden" name="eval_end" value="' + end_str + '"><input type="hidden" ' \
+                        'name="csv" value=1><button type="submit" value="Submit">Create .csv</button></form> <br><br> '
         for data in evals:
             html_insert += '<a href="/eval/' + str(data['id']) + '">' + str(
                 data['id']) + '</a><br>total_points: ' + str(data['total_points']) + '<br>time: ' + data[
@@ -85,7 +89,8 @@ class WebInterface:
         return template('evals', evals=html_insert, style="styles.css")
 
     # page for single eval with more information. For some reason I did not get the python code to work on templates,
-    # so I am passing every value separately..
+    # so I am passing every value separately.. Pictures also not showing on eval page, needs more debugging than I
+    # have time for!
     def get_eval(self, scale_id):
         one_eval = self.student_database.get_eval(scale_id)
         project_name = self.student_database.get_project_name(one_eval['project_id'])
