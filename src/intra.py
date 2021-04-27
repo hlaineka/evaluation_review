@@ -11,6 +11,8 @@ from tqdm import tqdm
 from queue import Queue
 from copy import deepcopy
 
+#Hive Helsinki 42API, not coded by me!
+
 requests.packages.urllib3.disable_warnings()
 
 LOG = logging.getLogger(__name__)
