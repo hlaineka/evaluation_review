@@ -166,6 +166,11 @@ projects, etc. Also the amount of evals per page could be easily implemented.
 - discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)
 - finetuning the too friendly points: also checking how many times the corrected has evaluated the corrector
 - checking the duration so that the actual duration of the evaluation is also saved and showed in the evaluation page
+- If evaluating a project the evaluator has not done them selves might be included somehow. If you have not done it, it
+is really difficult to find more errors than others.
+- working together on a lot of projects and evaluating each other could be taken into account with too friendly points.
++ notes after running a bigger test: cv project seems to give students the lowest points often. Might need some balancing?
+
 
 OTHER INFO:
 Unicorn burb by Mauro Gatti on Dribbble

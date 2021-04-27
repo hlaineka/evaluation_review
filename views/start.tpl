@@ -40,7 +40,7 @@
      </div>
     <div id="loading">
     <h3 style="text-align:center;">Unicorns are burbing life into the database!</h3>
-    <p style="text-align:center;">It takes about 3-5 mins per week to create the database, sometimes a lot faster, sometimes a lot slower!. Please do not leave this page while database is building!</p>
+    <p style="text-align:center;">It takes about 3-5 mins per week to create the database, sometimes a lot faster, sometimes a lot slower! Please do not leave this page while database is building!</p>
     %
     <img src="images/{{picture}}">
     %end
