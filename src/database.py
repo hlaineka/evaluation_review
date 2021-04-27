@@ -165,7 +165,6 @@ class StudentDatabase:
 						amount += 1
 				corrected_dict[i['corrected1']] += amount
 		corrected_amount = len(corrected_dict)
-		print(corrected_dict)
 		eval_ids = cursor.execute('SELECT id, corrected1 FROM scales WHERE corrector = "'+login+'"').fetchall()
 		for i in eval_ids:
 			eval_too_friendly_points = 0
