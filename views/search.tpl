@@ -8,6 +8,7 @@
 <body>
 <div class="topnav">
   <div class="topnav_leftcolumn">
+  <a href="/index" style="float:left">Home</a>
 	<a href="/evals" style="float:right">Evaluations</a>
 	<a href="/students" style="float:right">Students</a>
   </div>
@@ -32,14 +33,23 @@
 	</form>
     </div>
   </div>
-  <div class="rightcolumn">
+ <div class="rightcolumn">
     <div class="card3">
-      <h2>About Me</h2>
-      <p>This project was created by hlaineka</p>
+      <h2>Evaluation Reviewer</h2>
+      <p><a href="#basic">Info about the app</a></p>
+      <p><a href="#technical">Technical info</a></p>
+      <p><a href="#eval">Evaluation points</a></p>
+      <p><a href="#usability">Usability</a></p>
+      <p><a href="#database">Database structure</a></p>
+      <p><a href="#process">The process of making this project</a></p>
+      <p><a href="#ideas">Ideas for the future</a></p>
+      <p><a href="#other">Other info</a></p>
     </div>
     <div class="card4">
-      <h3>Follow Me</h3>
-      <p>Some text..</p>
+      <h3>About Me</h3>
+      <p>This project was created by hlaineka</p>
+      <a href="https://github.com/hlaineka/evaluation_review"><img src="images/GitHub-Mark-32px.png"></a>
+      <a href="https://www.linkedin.com/in/helvi-lainekallio/"><img src="images/LI-In-Bug.png"></a>
     </div>
   </div>
 </div>
@@ -49,7 +59,7 @@
   <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
   </div>
   <div class="footer_rightcolumn">
-  <p style="float:left position: relative; left:15px;">@hlaineka</p>
+  <p style="float:left; position: relative; left:15px;">@hlaineka</p>
   </div>
 </div>
 

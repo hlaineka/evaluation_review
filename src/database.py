@@ -130,13 +130,15 @@ class StudentDatabase:
 		if len(corrected_list) == 0:
 			return
 		amount = 0
-		total = 0
+		# students too friendly points calculated earlier are the base for the total points.
+		student_friendly_points = cursor.execute('SELECT too_friendly_points FROM students WHERE login = "'+login+'"').fetchone()
+		total = student_friendly_points['too_friendly_points']
 		for i in corrected_list:
 			total += i['total_points']
 			amount += 1
 		avarage = total / amount
 		avarage = "{:.1f}".format(avarage)
-		cursor.execute('UPDATE students SET evals ='+str(amount)+', avarage_points = '+str(avarage)+', total_points = too_friendly_points + '+str(avarage)+' WHERE login = ?', (login, ))
+		cursor.execute('UPDATE students SET evals ='+str(amount)+', avarage_points = '+str(avarage)+', total_points = '+str(total)+' WHERE login = ?', (login, ))
 		self.database.commit()
 
 	def save_student_points(self):
@@ -206,7 +208,7 @@ class StudentDatabase:
 		avarage = sum / total
 		if team['final_mark'] < avarage:
 			final_mark_points = 5
-		elif team['final_mark'] == 0 or sum == 1:
+		elif team['final_mark'] == 0:
 			final_mark_points = 5
 		else:
 			final_mark_points = 0

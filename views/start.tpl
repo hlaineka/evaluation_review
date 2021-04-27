@@ -47,12 +47,13 @@
   </div>
   <div class="rightcolumn">
     <div class="card3">
-      <h2>About Me</h2>
-      <p>This project was created by hlaineka</p>
+      <h2>Evaluation Reviewer</h2>
     </div>
     <div class="card4">
-      <h3>Follow Me</h3>
-      <p>Some text..</p>
+      <h3>About Me</h3>
+      <p>This project was created by hlaineka</p>
+      <a href="https://github.com/hlaineka/evaluation_review"><img src="images/GitHub-Mark-32px.png"></a>
+      <a href="https://www.linkedin.com/in/helvi-lainekallio/"><img src="images/LI-In-Bug.png"></a>
     </div>
   </div>
 </div>
@@ -62,7 +63,7 @@
   <p style="float:right; position: relative; right:15px; ">This project is made for the use of Hive Helsinki</p>
   </div>
   <div class="footer_rightcolumn">
-  <p style="float:left position: relative; left:15px;">@hlaineka</p>
+  <p style="float:left; position: relative; left:15px;">@hlaineka</p>
   </div>
 </div>
 
