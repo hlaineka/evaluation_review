@@ -175,14 +175,13 @@ class StudentDatabase:
     # that the project is assigned to Hive Helsinki.
     def save_projects(self):
         response_list = ic.pages_threaded("cursus/1/projects")
-        for i in response_list:
-            self.save_project(i)
+        self.save_project(response_list)
         time = datetime.now().strftime(time_format_sql)
         self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time,))
         self.database.commit()
 
     def save_project(self, project):
-        for i in project:
+        for i in project: 
             for w in (i['campus']):
                 if w['id'] == 13:
                     self.database.execute("INSERT INTO projects (project_id, name, slug) VALUES (?, ?, ?)",

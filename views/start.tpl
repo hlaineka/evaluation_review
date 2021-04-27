@@ -41,7 +41,6 @@
     <div id="loading">
     <h3 style="text-align:center;">Unicorns are burbing life into the database!</h3>
     <p style="text-align:center;">It takes about 3-5 mins per week to create the database. Please do not leave this page while database is building!</p>
-    <div style="text-align:center;" id="basicUsage">00:00:00</div>
     %
     <img src="images/{{picture}}">
     %end
@@ -74,7 +73,7 @@
   function unicorns(){
       document.getElementById("loading").style.display = "block";
       document.getElementById("content").style.display = "none";
-      var timer = new Timer();
+      
       timer.start();
    }
    function init(){
@@ -82,9 +81,7 @@
       document.getElementById("content").style.display = "block";
       document.getElementById("button").onsubmit = unicorns;
    }
-   timer.addEventListener('secondsUpdated', function (e) {
-    $('#basicUsage').html(timer.getTimeValues().toString());
-  });
+   
    window.onload = init;
 </script>
 </body>
