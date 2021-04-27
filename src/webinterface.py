@@ -1,6 +1,4 @@
-import bottle
-from bottle import route, run, template
-from database import StudentDatabase
+from bottle import template
 
 
 # Class to create webpages to bottle from templates. Templates are saved in ./views
@@ -65,9 +63,13 @@ class WebInterface:
         if start and end:
             date_str = "&eval_start=" + start + "&eval_end=" + end
         if int(page) > 1:
-            html_insert += '<a href="/evals?page=' + str(int(page) - 1) + date_str + '">prev   </a>'
+            html_insert += '<a href="/evals?page=' + str(int(page) - 1) + date_str + '" style="float:right;">prev</a>'
         if evals:
-            html_insert += '<a href="/evals?page=' + str(int(page) + 1) + date_str + '">   next</a><br><br>'
+            html_insert += '<a href="/evals?page=' + str(int(page) + 1) + date_str + '" style="float:left;">next</a' \
+                                                                                     '><br><br> '
+        start_str = start or ''
+        end_str = end or ''
+        html_insert += '<form action="/evals" method="get"><input type="hidden" name="eval_start" value="' + start_str + '"> <input type="hidden" name="eval_end" value="' + end_str + '"><input type="hidden" name="csv" value=1><button type="submit" value="Submit">Create .csv</button></form> <br><br>'
         for data in evals:
             html_insert += '<a href="/eval/' + str(data['id']) + '">' + str(
                 data['id']) + '</a><br>total_points: ' + str(data['total_points']) + '<br>time: ' + data[
@@ -115,3 +117,7 @@ class WebInterface:
 
     def get_search(self, error_str=''):
         return template('search', style="styles.css", errorstr=error_str)
+
+    def get_csv(self, start=None, end=None):
+        self.student_database.get_csv(start, end)
+        return

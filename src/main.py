@@ -1,10 +1,7 @@
 import bottle
-from bottle import route, run, template, redirect, abort, post, request, static_file
+from bottle import route, run, redirect, post, request, static_file
 from webinterface import WebInterface
 from database import StudentDatabase
-import os
-import requests
-import time
 
 app = bottle.app()
 studentdb = StudentDatabase()
@@ -65,6 +62,10 @@ def evals():
     page = request.query.page or 1
     start_evals = request.query.get('eval_start') or None
     end_evals = request.query.get('eval_end') or None
+    csv = request.query.get('csv') or 0
+    if csv:
+        web.get_csv(start=start_evals, end=end_evals)
+        return static_file('output.csv', root='./static/', download='output.csv')
     html_str = web.get_evals(page=page, start=start_evals, end=end_evals)
     return html_str
 

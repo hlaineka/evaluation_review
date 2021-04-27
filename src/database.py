@@ -1,9 +1,10 @@
+import os
 import sqlite3
 from os import path
-import json
 import re
 from intra import IntraAPIClient
 from datetime import datetime
+import csv
 
 # Class StudentDatabase used to create and get requests from SQLite database. When first
 # initiating the class, the __init__ function does not open connection to the database. This
@@ -54,7 +55,7 @@ class StudentDatabase:
             self.database.execute(
                 "CREATE TABLE scales(corrector TEXT, total_points INT DEFAULT 0, id INT, scale_id INT, project_id "
                 "INT, comment TEXT, comment_points INT DEFAULT 0, final_mark INT, final_mark_points INT DEFAULT 0, "
-                "begin_at DATETIME, corrected1 TEXT, corrected2 TEXT, corrected3 TEXT, corrected4 INT, "
+                "begin_at DATETIME, corrected1 TEXT, corrected2 TEXT, corrected3 TEXT, corrected4 TEXT, "
                 "too_friendly_points INT DEFAULT 0, filled_at DATETIME, duration INT, duration_points INT DEFAULT 0, "
                 "true_flags INT, flags_points INT DEFAULT 0, feedback_comment TEXT, feedback_rating INT, feedback_id "
                 "INT, feedback_points INT, feedback_interested INT, feedback_nice INT, feedback_punctuality INT, "
@@ -124,8 +125,7 @@ class StudentDatabase:
             evals = cursor.execute(
                 'SELECT total_points, id, project_id, begin_at, corrector, corrected1, corrected2, corrected3, '
                 'corrected4 FROM scales WHERE begin_at BETWEEN "' + start_str + '" AND "' + end_str + '" ORDER BY ' +
-                order + ' LIMIT ' + str(
-                    amount) + ' OFFSET ' + str(start))
+                order + ' LIMIT ' + str(amount) + ' OFFSET ' + str(start))
         return evals
 
     def get_project_name(self, project_id):
@@ -401,3 +401,34 @@ class StudentDatabase:
         time = datetime.now().strftime(time_format_sql)
         self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time,))
         self.database.commit()
+
+    def get_csv(self, start_date, end_date):
+        cursor = self.database.cursor()
+        if start_date and end_date:
+            start_time = datetime.strptime(start_date, '%Y-%m-%d')
+            start_time = start_time.replace(hour=00, minute=00, second=00)
+            end_time = datetime.strptime(end_date, '%Y-%m-%d')
+            end_time = end_time.replace(hour=23, minute=59, second=59)
+            start_str = start_time.strftime(time_format_sql)
+            end_str = end_time.strftime(time_format_sql)
+            data = cursor.execute('SELECT corrector, total_points, id, scale_id, project_id, comment, comment_points, '
+                                  'final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, '
+                                  'corrected4, too_friendly_points, filled_at, duration, duration_points, true_flags, '
+                                  'flags_points, feedback_comment, feedback_rating, feedback_id, feedback_points, '
+                                  'feedback_interested, feedback_nice, feedback_punctuality, feedback_rigorous, '
+                                  'feedback_total_points, team_id FROM scales WHERE begin_at BETWEEN "' + start_str +
+                                  '" AND "' + end_str+'"')
+        else:
+            data = cursor.execute('SELECT corrector, total_points, id, scale_id, project_id, comment, comment_points, '
+                                  'final_mark, final_mark_points, begin_at, corrected1, corrected2, corrected3, '
+                                  'corrected4, too_friendly_points, filled_at, duration, duration_points, true_flags, '
+                                  'flags_points, feedback_comment, feedback_rating, feedback_id, feedback_points, '
+                                  'feedback_interested, feedback_nice, feedback_punctuality, feedback_rigorous, '
+                                  'feedback_total_points, team_id FROM scales')
+        if os.path.exists('static/output.csv'):
+            os.remove('static/output.csv')
+        file = open('static/output.csv', 'w')
+        writer = csv.writer(file)
+        writer.writerow(['corrector', 'total_points', 'eval_id', 'scale_id', 'project_id', 'comment', 'comment_points', 'final_mark', 'final_mark_points', 'begin_at', 'corrected1', 'corrected2', 'corrected3', 'corrected4', 'too_friendly_points', 'filled_at', 'duration', 'duration_points', 'true_flags', 'flags_points', 'feedback_comment', 'feedback_rating', 'feedback_id', 'feedback_points', 'feedback_interested', 'feedback_nice', 'feedback_punctuality', 'feedback_rigorous', 'feedback_total_points', 'team_id'])
+        writer.writerows(data)
+

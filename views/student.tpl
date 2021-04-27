@@ -129,6 +129,7 @@ body {
 	margin-right: 10%;
 	text-align: center;
 	box-sizing: border-box;
+	padding-bottom: 20px;
   }
 
 /* Clear floats after the columns */
@@ -194,14 +195,14 @@ body {
   <div class="rightcolumn">
     <div class="card3">
       <h2>Evaluation Reviewer</h2>
-      <p><a href="/index/#basic">Info about the app</a></p>
-      <p><a href="/index/#technical">Technical info</a></p>
-      <p><a href="/index/#eval">Evaluation points</a></p>
-      <p><a href="/index/#usability">Usability</a></p>
-      <p><a href="/index/#database">Database structure</a></p>
-      <p><a href="/index/#process">The process of making this project</a></p>
-      <p><a href="/index/#ideas">Ideas for the future</a></p>
-      <p><a href="/index/#other">Other info</a></p>
+      <p><a href="/index#basic">Info about the app</a></p>
+      <p><a href="/index#technical">Technical info</a></p>
+      <p><a href="/index#eval">Evaluation points</a></p>
+      <p><a href="/index#usability">Usability</a></p>
+      <p><a href="/index#database">Database structure</a></p>
+      <p><a href="/index#process">The process of making this project</a></p>
+      <p><a href="/index#ideas">Ideas for the future</a></p>
+      <p><a href="/index#other">Other info</a></p>
     </div>
     <div class="card4">
       <h3>About Me</h3>
