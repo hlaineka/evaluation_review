@@ -12,19 +12,14 @@ div#loading {
     margin-right: auto
     }
 
-* {
-  box-sizing: border-box;
-}
-
 body {
   font-family: Arial;
-  padding: 10px;
   background: white;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 /* Header/Blog Title */
 .header {
-  padding: 30px;
   text-align: center;
   background: #ee7801;
 }
@@ -40,17 +35,16 @@ body {
   background-color: #ee7801;
 }
 
-.topnav_leftcolumn {   
+.topnav_leftcolumn {
 	float: left;
 	width: 75%;
   }
-  
+
   /* Right column */
 .topnav_rightcolumn {
 	float: left;
 	width: 25%;
 	background-color: #ffdd03;
-	padding-left: 20px;
   }
 
 .topnav_right {
@@ -75,14 +69,16 @@ body {
 
 /* Create two unequal columns that floats next to each other */
 /* Left column */
-.leftcolumn {   
-  float: left;
+.leftcolumn {
+	box-sizing: border-box;
+	float: left;
   width: 75%;
 }
 
 /* Right column */
 .rightcolumn {
-  float: left;
+	box-sizing: border-box;
+	float: left;
   width: 25%;
   background-color: white;
   padding-left: 20px;
@@ -97,7 +93,8 @@ body {
 
 /* Add a card effect for articles */
 .card {
-  background-color: white;
+	box-sizing: border-box;
+	background-color: white;
   padding: 20px;
   margin-top: 20px;
   margin-left: 15%;
@@ -111,6 +108,7 @@ body {
 	margin-left: 25%;
 	margin-right: 25%;
 	text-align: center;
+	box-sizing: border-box;
   }
 
   .card3 {
@@ -119,7 +117,8 @@ body {
 	margin-top: 50px;
 	margin-left: 10%;
 	margin-right: 10%;
-	text-align: center;
+	text-align: left;
+	box-sizing: border-box;
   }
 
   .card4 {
@@ -129,6 +128,7 @@ body {
 	margin-left: 10%;
 	margin-right: 10%;
 	text-align: center;
+	box-sizing: border-box;
   }
 
 /* Clear floats after the columns */
@@ -143,23 +143,23 @@ body {
 	overflow: hidden;
 }
 
-.footer_leftcolumn {   
+.footer_leftcolumn {
 	float: left;
 	background-color: #ee7801;
 	width: 75%;
+
   }
-  
+
   /* Right column */
 .footer_rightcolumn {
 	float: left;
 	width: 25%;
 	background-color: #ffdd03;
-	padding-left: 20px;
   }
 
 /* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
 @media screen and (max-width: 800px) {
-  .leftcolumn, .rightcolumn {   
+  .leftcolumn, .rightcolumn {
     width: 100%;
     padding: 0;
   }
@@ -171,7 +171,7 @@ body {
     float: none;
     width: 100%;
   }
-}
+
 </style>
 </head>
 <body>
@@ -194,14 +194,14 @@ body {
   <div class="rightcolumn">
     <div class="card3">
       <h2>Evaluation Reviewer</h2>
-      <p><a href="#basic">Info about the app</a></p>
-      <p><a href="#technical">Technical info</a></p>
-      <p><a href="#eval">Evaluation points</a></p>
-      <p><a href="#usability">Usability</a></p>
-      <p><a href="#database">Database structure</a></p>
-      <p><a href="#process">The process of making this project</a></p>
-      <p><a href="#ideas">Ideas for the future</a></p>
-      <p><a href="#other">Other info</a></p>
+      <p><a href="/index/#basic">Info about the app</a></p>
+      <p><a href="/index/#technical">Technical info</a></p>
+      <p><a href="/index/#eval">Evaluation points</a></p>
+      <p><a href="/index/#usability">Usability</a></p>
+      <p><a href="/index/#database">Database structure</a></p>
+      <p><a href="/index/#process">The process of making this project</a></p>
+      <p><a href="/index/#ideas">Ideas for the future</a></p>
+      <p><a href="/index/#other">Other info</a></p>
     </div>
     <div class="card4">
       <h3>About Me</h3>
