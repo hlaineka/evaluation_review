@@ -77,7 +77,12 @@ class StudentDatabase:
         self.start = ''
         self.end = ''
 
+    #############
+    #  GETTERS  #
+    #############
+
     # getters for WebInterface to use
+
     def get_database(self):
         return self.database
 
@@ -133,7 +138,11 @@ class StudentDatabase:
         project_name = project[0]
         return project_name
 
-    # student database creation
+    #########################
+    #   Database creation   #
+    #########################
+
+    # student database creation. Gets all the students of Hive Helsinki campus threaded.
     def save_student(self, student):
         cursor = self.database.cursor()
         cursor.execute("INSERT INTO students (id, login, url) VALUES (?, ?, ?)",
@@ -141,9 +150,11 @@ class StudentDatabase:
         self.database.commit()
         return
 
+    # saving of a single student. if there is string 3b3 in the login, meaning that there is no 
+    # proper login saved in the database, the student info is not saved.
     def save_students(self):
         pattern = re.compile('3b3')
-        response_list = ic.pages("campus/13/users")
+        response_list = ic.pages_threaded("campus/13/users")
         for i in response_list:
             for w in i:
                 try:
@@ -159,164 +170,57 @@ class StudentDatabase:
         self.database.commit()
         return
 
-    # Basic function for student points creation. Fetches a list of student logins from the database, iterates the list
-    # and calls get_student_points for each student.
-    def save_student_points(self):
-        cursor = self.database.cursor()
-        students = cursor.execute("SELECT login FROM students").fetchall()
-        for i in students:
-            self.get_student_points(i['login'])
+
+    # project database creation. Downloads all the projects threaded from 42 cursus. Does a double check to see
+    # that the project is assigned to Hive Helsinki.
+    def save_projects(self):
+        response_list = ic.pages_threaded("cursus/1/projects")
+        for i in response_list:
+            self.save_project(i)
         time = datetime.now().strftime(time_format_sql)
-        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"student_points\"", (time,))
+        self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time,))
         self.database.commit()
 
-    # Student point saving
-    def get_student_points(self, login):
-        cursor = self.database.cursor()
-        # check that the person has evals
-        corrected_list = cursor.execute('SELECT total_points FROM scales WHERE corrector ="' + login + '"').fetchall()
-        if len(corrected_list) == 0:
-            return
-        amount = 0
-        # students too friendly points calculated earlier are the base for the total points.
-        student_friendly_points = cursor.execute(
-            'SELECT too_friendly_points FROM students WHERE login = "' + login + '"').fetchone()
-        total = student_friendly_points['too_friendly_points']
-        for i in corrected_list:
-            total += i['total_points']
-            amount += 1
-        average = total / amount
-        average = "{:.1f}".format(average)
-        cursor.execute('UPDATE students SET evals =' + str(amount) + ', avarage_points = ' + str(
-            average) + ', total_points = ' + str(total) + ' WHERE login = ?', (login,))
+    def save_project(self, project):
+        for i in project:
+            for w in (i['campus']):
+                if w['id'] == 13:
+                    self.database.execute("INSERT INTO projects (project_id, name, slug) VALUES (?, ?, ?)",
+                                          (i['id'], i['name'], i['slug']))
         self.database.commit()
 
-    # Basic function for calculating too-friendly points.
-    def save_friendly_points(self):
+
+    # scale teams database creations. Gets the list of students from database, and uses the student id to
+    # fetch all the evaluations where the student was an evaluator from the database. Goes through the list
+    # it gets as the aswer and saves every individual scale team into database.
+    def save_scale_teams(self, start, end):
         cursor = self.database.cursor()
-        students = cursor.execute("SELECT login FROM students").fetchall()
-        for i in students:
-            self.get_too_friendly_points(i['login'])
+        student_ids = cursor.execute("SELECT id FROM students")
+        for i in student_ids:
+            self.save_student_teams(i[0], start, end)
         time = datetime.now().strftime(time_format_sql)
-        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"too_friendly\"", (time,))
+        self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time,))
         self.database.commit()
 
-    # too friendly -points calculated separately
-    def get_too_friendly_points(self, login):
-        cursor = self.database.cursor()
-        # check that the person has evals
-        corrected_list = cursor.execute('SELECT corrected1 FROM scales WHERE corrector ="' + login + '"').fetchall()
-        if len(corrected_list) == 0:
-            return
-        corrected_dict = {}
-        for i in corrected_list:
-            if not i['corrected1'] in corrected_dict:
-                corrected_dict[i['corrected1']] = 0
-                amount = 0
-                for w in corrected_list:
-                    if w['corrected1'] == i['corrected1']:
-                        amount += 1
-                corrected_dict[i['corrected1']] += amount
-        corrected_amount = len(corrected_dict)
-        eval_ids = cursor.execute('SELECT id, corrected1 FROM scales WHERE corrector = "' + login + '"').fetchall()
-        for i in eval_ids:
-            eval_too_friendly_points = 0
-            if (corrected_dict[i['corrected1']]) > 2:
-                eval_too_friendly_points = -10
-            cursor.execute(
-                "UPDATE scales SET too_friendly_points =" + str(eval_too_friendly_points) + " WHERE id = (?)",
-                (i['id'],))
-            cursor.execute(
-                "UPDATE scales SET total_points = total_points + " + str(eval_too_friendly_points) + " WHERE id = (?)",
-                (i['id'],))
-        if corrected_amount < 10:
-            cursor.execute("UPDATE students SET too_friendly_points =" + str(-10) + " WHERE login = (?)", (login,))
-        self.database.commit()
+    # Saves the scales teams of a one student where they have been the corrector. Fetches only the time frame
+    # that was given in the landing page for database creation.
+    def save_student_teams(self, student_id, start, end):
+        if not start:
+            start = "2021-04-01"
+        if not end:
+            end = "2021-04-25"
+        url = 'users/' + str(student_id) + '/scale_teams/as_corrector?range[begin_at]=' + start + ',' + end
+        data = ic.pages_threaded(url)
+        for i in data:
+            self.save_scale_team(i)
 
-    # point calculation for evals
-    def get_comment_points(self, team):
-        comment_len = len(team[5])
-        comment_points = 0
-        if (comment_len > 180):
-            comment_points = 5
-        elif (comment_len > 360):
-            comment_points = 10
-        return comment_points
-
-    def get_final_mark_points(self, team):
-        final_marks = self.database.execute(
-            "SELECT final_mark FROM scales WHERE team_id =" + str(team['team_id'])).fetchall()
-        total = len(final_marks)
-        final_mark_sum = 0
-        for i in final_marks:
-            final_mark_sum += i['final_mark']
-        average = final_mark_sum / total
-        if team['final_mark'] < average:
-            final_mark_points = 5
-        elif team['final_mark'] == 0:
-            final_mark_points = 5
-        else:
-            final_mark_points = 0
-        return final_mark_points
-
-    def get_duration_points(self, team, final_mark_points):
-        start_time = datetime.strptime(team[9], time_format_sql)
-        end_time = datetime.strptime(team[15], time_format_sql)
-        target_time = team[16]
-        minimum_time = target_time * 0.66
-        duration = (end_time - start_time).total_seconds()
-        duration_points = 0
-        if duration < minimum_time and final_mark_points <= 0:
-            duration_points = -42
-        elif duration < target_time and final_mark_points <= 0:
-            duration_points = -10
-        elif duration > target_time * 1.5:
-            duration_points = 20
-        else:
-            duration_points = 10
-        return duration_points
-
-    def get_feedback_total_points(self, feedback_points):
-        return feedback_points * 2
-
-    def calculate_eval_points(self, scale_id, team, feedback_points):
-        cursor = self.database.cursor()
-        final_mark_points = self.get_final_mark_points(team)
-        cursor.execute("UPDATE scales SET final_mark_points =" + str(final_mark_points) + " WHERE id = (?)",
-                       (scale_id,))
-        comment_points = self.get_comment_points(team)
-        cursor.execute("UPDATE scales SET comment_points = 1 WHERE id = (?)", (scale_id,))
-        duration_points = self.get_duration_points(team, final_mark_points)
-        cursor.execute("UPDATE scales SET duration_points =" + str(duration_points) + " WHERE id = (?)", (scale_id,))
-        flags_points = 0
-        feedback_total_points = self.get_feedback_total_points(feedback_points)
-        cursor.execute("UPDATE scales SET feedback_total_points =" + str(feedback_total_points) + " WHERE id = (?)",
-                       (scale_id,))
-        total_points = comment_points + final_mark_points + duration_points + flags_points + feedback_total_points
-        cursor.execute("UPDATE scales SET total_points =" + str(total_points) + " WHERE id = (?)", (scale_id,))
-        self.database.commit()
-
-    def save_eval_points(self):
-        cursor = self.database.cursor()
-        evals = cursor.execute("SELECT * FROM scales")
-        for i in evals:
-            self.calculate_eval_points(i[2], i, i[23])
-        time = datetime.now().strftime(time_format_sql)
-        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"evals_points\"", (time,))
-        self.database.commit()
-
-    # scale teams database creations
+    #The saving of a single scale team = evaluation.
     def save_scale_team(self, team):
         # checking that the evaluation did actually happen
-        if not team:
+        if (not team) or team['truant'] or (not team['feedback']) or (not team['feedback'][0]):
             return
-        if team['truant']:
-            return
-        if not team['feedback']:
-            return
-        if not team['feedback'][0]:
-            return
-        # adding only evaluations that happened after c-piscine for the test version
+        # adding only evaluations that happened after c-piscine for this test version by comparing the evaluated
+        # project to the saved projects.
         project = self.database.execute(
             "SELECT name FROM projects WHERE project_id = " + str(team['team']['project_id'])).fetchone()
         if not project:
@@ -366,42 +270,185 @@ class StudentDatabase:
         self.database.commit()
         return
 
-    def save_student_teams(self, student_id, start, end):
-        if not start:
-            start = "2021-04-01"
-        if not end:
-            end = "2021-04-25"
-        url = 'users/' + str(student_id) + '/scale_teams/as_corrector?range[begin_at]=' + start + ',' + end
-        data = ic.pages_threaded(url)
-        for i in data:
-            self.save_scale_team(i)
 
-    def save_scale_teams(self, start, end):
+    #########################
+    #   POINT CALCULATION   #
+    #########################
+    
+
+    # point calculation for evals. Get the list of evals from the database, and iterates through it. Every
+    # evaluation is send to calculate_eval_points so that the points for that evaluation can be calculated.
+    def save_eval_points(self):
         cursor = self.database.cursor()
-        student_ids = cursor.execute("SELECT id FROM students")
-        for i in student_ids:
-            self.save_student_teams(i[0], start, end)
+        evals = cursor.execute("SELECT * FROM scales")
+        for i in evals:
+            self.calculate_eval_points(i[2], i, i[23])
         time = datetime.now().strftime(time_format_sql)
-        self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"scales\"", (time,))
+        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"eval_points\"", (time,))
         self.database.commit()
 
-    # project database creation
-    def save_project(self, project):
-        for i in project:
-            for w in (i['campus']):
-                if w['id'] == 13:
-                    self.database.execute("INSERT INTO projects (project_id, name, slug) VALUES (?, ?, ?)",
-                                          (i['id'], i['name'], i['slug']))
+    # Calculates the eval points of a single evaluation.
+    def calculate_eval_points(self, scale_id, team, feedback_points):
+        cursor = self.database.cursor()
+        final_mark_points = self.get_final_mark_points(team)
+        cursor.execute("UPDATE scales SET final_mark_points =" + str(final_mark_points) + " WHERE id = (?)",
+                       (scale_id,))
+        comment_points = self.get_comment_points(team)
+        cursor.execute("UPDATE scales SET comment_points = 1 WHERE id = (?)", (scale_id,))
+        duration_points = self.get_duration_points(team, final_mark_points)
+        cursor.execute("UPDATE scales SET duration_points =" + str(duration_points) + " WHERE id = (?)", (scale_id,))
+        flags_points = 0
+        feedback_total_points = self.get_feedback_total_points(feedback_points)
+        cursor.execute("UPDATE scales SET feedback_total_points =" + str(feedback_total_points) + " WHERE id = (?)",
+                       (scale_id,))
+        total_points = comment_points + final_mark_points + duration_points + flags_points + feedback_total_points
+        cursor.execute("UPDATE scales SET total_points =" + str(total_points) + " WHERE id = (?)", (scale_id,))
         self.database.commit()
 
-    def save_projects(self):
-        response_list = ic.pages("cursus/1/projects")
-        for i in response_list:
-            self.save_project(i)
+    # Calculates the comment points. The length of the comment defines the amount of points given.
+    def get_comment_points(self, team):
+        comment_len = len(team[5])
+        comment_points = 0
+        if (comment_len > 180):
+            comment_points = 5
+        elif (comment_len > 360):
+            comment_points = 10
+        return comment_points
+
+    # Calculates the final mark points. If the grade the student gave is smaller than avarage points
+    # for that project team evaluation, or if the student has found a bug that has caused the evaluation
+    # to fail with 0 points, student is rewarded with points. 
+    def get_final_mark_points(self, team):
+        final_marks = self.database.execute(
+            "SELECT final_mark FROM scales WHERE team_id =" + str(team['team_id'])).fetchall()
+        total = len(final_marks)
+        final_mark_sum = 0
+        for i in final_marks:
+            final_mark_sum += i['final_mark']
+        average = final_mark_sum / total
+        if team['final_mark'] < average:
+            final_mark_points = 5
+        elif team['final_mark'] == 0:
+            final_mark_points = 5
+        else:
+            final_mark_points = 0
+        return final_mark_points
+
+    # Calculates duration points. If duration is less than 66% of the estimated evaluation length given in the scale
+    # information, and the evaluation did not end with a failing grade of 0 points (showing that the evaluation in fact
+    # ended because a severe bug was found), -42 points are returned. If the time is less than the estimated time, -10
+    # points is returned. If the student has spent more than 1,5 times the estimated time evaluating the project, 20 
+    # points are returned. In other cases, 10 points are returned.
+    def get_duration_points(self, team, final_mark_points):
+        start_time = datetime.strptime(team[9], time_format_sql)
+        end_time = datetime.strptime(team[15], time_format_sql)
+        target_time = team[16]
+        minimum_time = target_time * 0.66
+        duration = (end_time - start_time).total_seconds()
+        duration_points = 0
+        if duration < minimum_time and final_mark_points <= 0:
+            duration_points = -42
+        elif duration < target_time and final_mark_points <= 0:
+            duration_points = -10
+        elif duration > target_time * 1.5:
+            duration_points = 20
+        else:
+            duration_points = 10
+        return duration_points
+
+    # returns the feedback points, that are twice the amount of points the corrected has given for the evaluation.
+    def get_feedback_total_points(self, feedback_points):
+        return feedback_points * 2
+
+
+    # Basic function for calculating too-friendly points. Fetches logins from the student database, and iterates
+    # through the list to calculate the too friendly points. The too friendly points are calculated after other
+    # evaluation points, because they take into account all the given evaluations in the database.
+    def save_friendly_points(self):
+        cursor = self.database.cursor()
+        students = cursor.execute("SELECT login FROM students").fetchall()
+        for i in students:
+            self.get_too_friendly_points(i['login'])
         time = datetime.now().strftime(time_format_sql)
-        self.database.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"projects\"", (time,))
+        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"too_friendly\"", (time,))
         self.database.commit()
 
+    # too friendly points calculation of a single student. Creates a dictionary with all the names of the people
+    # the student has evaluated with the amount of times they have evaluated them. Come to think of it, the comparison
+    # should probably be done the other way aroung also, so that it is checked how many times each corrected has corrected
+    # the corrector. That might be the record of using correct* in a sentence. Only checks the first corrected now.
+    def get_too_friendly_points(self, login):
+        cursor = self.database.cursor()
+        # check that the person has evals
+        corrected_list = cursor.execute('SELECT id, corrected1 FROM scales WHERE corrector ="' + login + '"').fetchall()
+        if len(corrected_list) == 0:
+            return
+        #create the dictionary with logins and amounts they have been evaluated.
+        corrected_dict = {}
+        for i in corrected_list:
+            if not i['corrected1'] in corrected_dict:
+                corrected_dict[i['corrected1']] = 0
+                amount = 0
+                for w in corrected_list:
+                    if w['corrected1'] == i['corrected1']:
+                        amount += 1
+                corrected_dict[i['corrected1']] += amount
+        corrected_amount = len(corrected_dict)
+        # go through the list again and save the too friendly points of an evaluation. Also saves too_friendly points
+        # to the student database in case there is only a few who the person has evaluated.
+        for i in corrected_list:
+            eval_too_friendly_points = 0
+            if (corrected_dict[i['corrected1']]) > 2:
+                eval_too_friendly_points = -10
+            cursor.execute(
+                "UPDATE scales SET too_friendly_points =" + str(eval_too_friendly_points) + " WHERE id = (?)",
+                (i['id'],))
+            cursor.execute(
+                "UPDATE scales SET total_points = total_points + " + str(eval_too_friendly_points) + " WHERE id = (?)",
+                (i['id'],))
+        if corrected_amount < 10:
+            cursor.execute("UPDATE students SET too_friendly_points =" + str(-10) + " WHERE login = (?)", (login,))
+        self.database.commit()
+
+
+    # Basic function for student points creation. Fetches a list of student logins from the database, iterates the list
+    # and calls get_student_points for each student.
+    def save_student_points(self):
+        cursor = self.database.cursor()
+        students = cursor.execute("SELECT login FROM students").fetchall()
+        for i in students:
+            self.get_student_points(i['login'])
+        time = datetime.now().strftime(time_format_sql)
+        cursor.execute("UPDATE tables SET status = 1, created = (?) WHERE name = \"student_points\"", (time,))
+        self.database.commit()
+
+    # Student point saving
+    def get_student_points(self, login):
+        cursor = self.database.cursor()
+        # check that the person has evals
+        corrected_list = cursor.execute('SELECT total_points FROM scales WHERE corrector ="' + login + '"').fetchall()
+        if len(corrected_list) == 0:
+            return
+        amount = 0
+        # students too friendly points calculated earlier are the base for the total points.
+        student_friendly_points = cursor.execute(
+            'SELECT too_friendly_points FROM students WHERE login = "' + login + '"').fetchone()
+        total = student_friendly_points['too_friendly_points']
+        for i in corrected_list:
+            total += i['total_points']
+            amount += 1
+        average = total / amount
+        average = "{:.1f}".format(average)
+        cursor.execute('UPDATE students SET evals =' + str(amount) + ', avarage_points = ' + str(
+            average) + ', total_points = ' + str(total) + ' WHERE login = ?', (login,))
+        self.database.commit()
+
+    #####################
+    #   .CSV CREATION   #
+    #####################
+
+    # Creates a .csv file from evaluations in the given time frame. If the time frame is not given,
+    # saves the whole database. The file static/output.csv is reused for this purpose.
     def get_csv(self, start_date, end_date):
         cursor = self.database.cursor()
         if start_date and end_date:

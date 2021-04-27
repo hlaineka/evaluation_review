@@ -33,8 +33,6 @@ def redirect_to_wait():
 def wait():
     start_database = request.query.start or None
     end_database = request.query.end or None
-    print(start_database)
-    print(end_database)
     studentdb.init_database(start_database, end_database)
     redirect("/index")
 

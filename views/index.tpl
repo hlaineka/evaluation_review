@@ -52,11 +52,13 @@ Usability points taken into account while making the project:<br>
 - The script run.sh to make the installation, building, and usage easier<br>
 - The app uses an easy-to-use web interface. I have put effort into making the layout of the page intuitive and not overloaded.
 - The page loads first and after that, you need to verify that you want to build the database since it takes a long time. The ability to select the timeframe from where the database is created has been added to allow the user to manage how much time is used to create the database. <br>
+- A rough time estimate for database creation in the landing page to help with selecting the timeframe.<br>
 - Paginated results for evaluations, separate page for each evaluation to give more information. This way the evaluations page is not too crowded.<br>
 - The student page also shows all the evaluations done by the student so that they are easily accessible.
 - Burbing unicorn to show that something actually happens and that the page is not just stuck loading data<br>
 - Search option, where more search option can be added easily.<br>
 - .csv download for evaluations in the selected time frame <br>
+- Right hand navigator with easy access links to documentation.<br>
 - I had planned to do early usability testing with two Hivers. They would have installed the app with the instructions given on the app's Github page while screen sharing and commenting on their experience when using it. Since I have quite limited experience in user experience and interface design, I would like to implement this test at some point to learn more about the things that other people find intuitive and easy to use.<br><br><br><br>
 
 <h2><a name="database">DATABASE STRUCTURE:</a></h2>
@@ -95,10 +97,10 @@ The limits of the database creation that come from the hourly request limit and 
 - add a rating of different areas (interested, nice, punctuality, rigorous)found on the feedback to eval page<br>
 - secure connection<br>
 - campus and cursus selection to database creation to allow portability to piscines and other campuses<br>
-- progress bar for database creation
-- fine tuning the point system
-- export to .json
-- more work on the IU
+- progress bar for database creation<br>
+- fine tuning the point system<br>
+- export to .json<br>
+- more work on the IU<br>
 - discord notifications (discord stuff is something I have been eager to get to know, but have not had the time)<br><br><br><br>
 
 <h2><a name="other">OTHER INFO:</a></h2>
