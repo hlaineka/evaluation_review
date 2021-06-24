@@ -1,5 +1,10 @@
 # evaluation_review
 
+## What I have learned since making this project
+How harmful sql injections can be!
+
+![Bobby Tables](https://imgs.xkcd.com/comics/exploits_of_a_mom.png "Little Bobby tables")
+
 ## How to install:
 
 1. Download this repo
